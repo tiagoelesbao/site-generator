@@ -4,29 +4,37 @@
     "description": "Gerador de sites dinâmicos",
     "main": "src/index.js",
     "scripts": {
-      "start": "webpack serve --mode development",
-      "build": "webpack --mode production"
+        "start": "webpack serve --mode development",
+        "build": "webpack --mode production",
+        "server": "node server/server.js",
+        "dev": "concurrently \"npm run start\" \"npm run server\""
     },
     "keywords": [],
     "author": "",
     "license": "ISC",
     "dependencies": {
-      "jszip": "^3.10.1",
-      "react": "^18.2.0",
-      "react-dom": "^18.2.0"
+        "@stripe/react-stripe-js": "^1.16.5",
+        "@stripe/stripe-js": "^1.54.2",
+        "axios": "^0.24.0",
+        "jszip": "^3.10.1",
+        "netlify": "^6.1.29",it
+        "react": "^18.2.0",
+        "react-dom": "^18.2.0",
+        "stripe": "^8.174.0"
     },
     "devDependencies": {
-      "@babel/core": "^7.22.5",
-      "@babel/preset-env": "^7.22.5",
-      "@babel/preset-react": "^7.22.5",
-      "babel-loader": "^9.1.2",
-      "css-loader": "^6.8.1",
-      "dotenv-webpack": "^8.0.1",
-      "file-loader": "^6.2.0",
-      "html-webpack-plugin": "^5.5.1",
-      "style-loader": "^3.3.3",
-      "webpack": "^5.86.0",
-      "webpack-cli": "^5.1.4",
-      "webpack-dev-server": "^4.15.1"
+        "@babel/core": "^7.22.5",
+        "@babel/preset-env": "^7.22.5",
+        "@babel/preset-react": "^7.22.5",
+        "babel-loader": "^9.1.2",
+        "concurrently": "^7.6.0",
+        "css-loader": "^6.8.1",
+        "dotenv-webpack": "^8.0.1",
+        "file-loader": "^6.2.0",
+        "html-webpack-plugin": "^5.5.1",
+        "style-loader": "^3.3.3",
+        "webpack": "^5.86.0",
+        "webpack-cli": "^5.1.4",
+        "webpack-dev-server": "^4.15.1"
     }
-  }
+}

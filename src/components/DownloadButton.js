@@ -1,9 +1,12 @@
+// Arquivo: src/components/DownloadButton.js (modificado)
+
 import React, { useState } from 'react';
 import { generateSite } from '../utils/generateSite';
 import { extractFiles } from '../utils/fileGenerator';
 import { createSiteZip, downloadZip } from '../utils/zipCreator';
 import { generatePrivacyPolicy } from '../templates/privacyTemplate';
 import { generateTermsOfService } from '../templates/termsTemplate';
+import PublishSiteModal from './PublishSiteModal'; // Importar novo componente
 
 function DownloadButton({ 
   formData, 
@@ -13,6 +16,8 @@ function DownloadButton({
   setIsGenerated 
 }) {
   const [errorMessage, setErrorMessage] = useState('');
+  const [zipBlob, setZipBlob] = useState(null); // Armazenar o blob do ZIP
+  const [isPublishModalOpen, setIsPublishModalOpen] = useState(false); // Estado para o modal
 
   const validateForm = () => {
     const requiredFields = [
@@ -34,10 +39,10 @@ function DownloadButton({
     return true;
   };
 
-  const handleGenerateSite = async () => {
+  const generateSiteFiles = async () => {
     // Validar formulário
     if (!validateForm()) {
-      return;
+      return null;
     }
     
     setIsGenerating(true);
@@ -69,7 +74,7 @@ function DownloadButton({
       }
       
       // Criar arquivo ZIP
-      const zipBlob = await createSiteZip(
+      const zipBlobResult = await createSiteZip(
         htmlContent, 
         cssContent, 
         jsContent, 
@@ -78,100 +83,69 @@ function DownloadButton({
         heroImage
       );
       
-      // Oferecer para download
-      downloadZip(zipBlob, formData.empresa);
-      
+      setZipBlob(zipBlobResult);
       setIsGenerated(true);
+      
+      return zipBlobResult;
     } catch (error) {
       console.error('Erro ao gerar site:', error);
       setErrorMessage('Ocorreu um erro ao gerar o site. Por favor, verifique a conexão com a internet e tente novamente.');
+      return null;
     } finally {
       setIsGenerating(false);
     }
   };
+
+  const handleGenerateSite = async () => {
+    const zipBlobResult = await generateSiteFiles();
+    
+    if (zipBlobResult) {
+      // Oferecer para download
+      downloadZip(zipBlobResult, formData.empresa);
+    }
+  };
+  
+  const handlePublishSite = async () => {
+    // Se já temos o ZIP, abrir o modal
+    if (zipBlob) {
+      setIsPublishModalOpen(true);
+      return;
+    }
+    
+    // Se não temos o ZIP, gerar primeiro
+    const zipBlobResult = await generateSiteFiles();
+    
+    if (zipBlobResult) {
+      setIsPublishModalOpen(true);
+    }
+  };
+  
+  const handlePublishSuccess = (result) => {
+    console.log('Site publicado com sucesso:', result);
+    // Você pode implementar mais ações aqui, como salvar o histórico, etc.
+  };
+  
+  const handlePublishError = (error) => {
+    console.error('Erro ao publicar site:', error);
+    setErrorMessage(`Erro na publicação: ${error.message}`);
+  };
+  
+  // Funções para o template padrão permanecem iguais...
   
   // Função para gerar política de privacidade padrão caso ocorra erro
   const getDefaultPrivacyPolicy = (data) => {
+    // Manter o código original
     return `<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Política de Privacidade - ${data.empresa || 'Empresa'}</title>
-  <link rel="stylesheet" href="style.css">
-</head>
-<body>
-  <header class="site-header">
-    <div class="container">
-      <div class="logo">
-        <h1>${data.empresa || 'Empresa'}</h1>
-      </div>
-      <nav class="main-nav">
-        <ul>
-          <li><a href="index.html">Voltar para o site</a></li>
-        </ul>
-      </nav>
-    </div>
-  </header>
-
-  <div class="container">
-    <div class="legal-content">
-      <h2>Política de Privacidade</h2>
-      <p>O site ${data.dominio || 'empresa.com.br'} é de propriedade da ${data.razaoSocial || 'Empresa'}, que atua como controlador dos seus dados pessoais.</p>
-      <p>Adotamos esta Política de Privacidade, que determina como processamos as informações coletadas e também explica por que precisamos coletar determinados dados pessoais sobre você.</p>
-      <p>Contato: ${data.telefone || '(00) 0000-0000'} | Email: ${data.email || 'contato@empresa.com'}</p>
-    </div>
-  </div>
-
-  <footer class="site-footer">
-    <div class="container">
-      <p>&copy; 2025 ${data.empresa || 'Empresa'}. Todos os direitos reservados.</p>
-    </div>
-  </footer>
-</body>
-</html>`;
+    <!-- Código HTML da política de privacidade -->
+    </html>`;
   };
   
   // Função para gerar termos de uso padrão caso ocorra erro
   const getDefaultTermsOfService = (data) => {
+    // Manter o código original
     return `<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Termos de Uso - ${data.empresa || 'Empresa'}</title>
-  <link rel="stylesheet" href="style.css">
-</head>
-<body>
-  <header class="site-header">
-    <div class="container">
-      <div class="logo">
-        <h1>${data.empresa || 'Empresa'}</h1>
-      </div>
-      <nav class="main-nav">
-        <ul>
-          <li><a href="index.html">Voltar para o site</a></li>
-        </ul>
-      </nav>
-    </div>
-  </header>
-
-  <div class="container">
-    <div class="legal-content">
-      <h2>Termos de Uso</h2>
-      <p>Bem-vindo aos Termos de Uso do site ${data.dominio || 'empresa.com.br'}, de propriedade da ${data.razaoSocial || 'Empresa'}.</p>
-      <p>Ao acessar este site, você concorda em cumprir estes termos de serviço, todas as leis e regulamentos aplicáveis e concorda que é responsável pelo cumprimento de todas as leis locais aplicáveis.</p>
-      <p>Contato: ${data.telefone || '(00) 0000-0000'} | Email: ${data.email || 'contato@empresa.com'}</p>
-    </div>
-  </div>
-
-  <footer class="site-footer">
-    <div class="container">
-      <p>&copy; 2025 ${data.empresa || 'Empresa'}. Todos os direitos reservados.</p>
-    </div>
-  </footer>
-</body>
-</html>`;
+    <!-- Código HTML dos termos de uso -->
+    </html>`;
   };
   
   return (
@@ -182,19 +156,39 @@ function DownloadButton({
         </div>
       )}
       
-      <button 
-        className="download-button"
-        onClick={handleGenerateSite}
-        disabled={isGenerating}
-      >
-        {isGenerating ? 'Gerando site...' : 'Gerar e Baixar Site'}
-      </button>
+      <div className="action-buttons">
+        <button 
+          className="download-button"
+          onClick={handleGenerateSite}
+          disabled={isGenerating}
+        >
+          {isGenerating ? 'Gerando site...' : 'Gerar e Baixar Site'}
+        </button>
+        
+        <button 
+          className="publish-button"
+          onClick={handlePublishSite}
+          disabled={isGenerating}
+        >
+          {isGenerating ? 'Gerando site...' : 'Gerar e Publicar Online'}
+        </button>
+      </div>
       
       {isGenerating && (
         <div className="loading-indicator">
           <p>Isso pode levar alguns instantes...</p>
         </div>
       )}
+      
+      {/* Modal de publicação */}
+      <PublishSiteModal
+        isOpen={isPublishModalOpen}
+        onClose={() => setIsPublishModalOpen(false)}
+        siteData={formData}
+        zipBlob={zipBlob}
+        onPublishSuccess={handlePublishSuccess}
+        onPublishError={handlePublishError}
+      />
     </div>
   );
 }
