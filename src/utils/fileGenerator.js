@@ -54,7 +54,6 @@ function generateDefaultHTML() {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="Soluções personalizadas em marketing digital para o crescimento do seu negócio">
-  <link rel="icon" href="favicon.ico" type="image/x-icon">
   <title>Marketing Digital</title>
   <link rel="stylesheet" href="style.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -274,6 +273,7 @@ section {
   position: sticky;
   top: 0;
   z-index: 100;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
 }
 
 .header-container {
@@ -331,10 +331,18 @@ section {
 .hero-section {
   padding: 7rem 0 6rem;
   background-color: var(--white);
+  position: relative;
+  /* Preparado para receber uma imagem de fundo */
+  background-color: var(--light-gray);
 }
 
 .hero-content {
   max-width: 650px;
+  position: relative;
+  z-index: 2;
+  padding: 2rem;
+  border-radius: 4px;
+  background-color: rgba(255, 255, 255, 0.8);
 }
 
 .hero-content h1 {
@@ -368,7 +376,7 @@ section {
 
 .service-card:hover {
   transform: translateY(-5px);
-box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
 }
 
 /* Quem Somos */

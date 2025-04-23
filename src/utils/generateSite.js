@@ -36,6 +36,7 @@ export async function generateSite(formData) {
     - Informações de contato e CNPJ visíveis no rodapé
     - Layout de duas colunas na seção de contato (formulário e informações)
     - Navegação fixa no topo
+    - Seção hero preparada para receber uma imagem de fundo
     
     REQUISITOS:
     - Gere o código HTML completo para a página inicial dentro de um bloco de código com a sintaxe \`\`\`html
@@ -45,6 +46,8 @@ export async function generateSite(formData) {
     - Garanta responsividade para todos dispositivos
     - Formulário de contato funcional
     - Navegação suave para links internos
+    - Prepare o CSS para receber uma imagem de fundo na seção hero
+    - NÃO inclua nenhum favicon ou link para favicon externo no HTML
     - Informações de rodapé seguindo o modelo exato abaixo:
       * Nome da empresa + Ltda.
       * CNPJ completo
@@ -72,7 +75,7 @@ export async function generateSite(formData) {
         messages: [
           {
             role: "system",
-            content: "Você é um desenvolvedor web especializado em criar sites modernos, minimalistas e responsivos para marketing digital, seguindo as tendências mais recentes de design. Seu foco é em um design clean, corporativo e profissional."
+            content: "Você é um desenvolvedor web especializado em criar sites modernos, minimalistas e responsivos para marketing digital, seguindo as tendências mais recentes de design. Seu foco é em um design clean, corporativo e profissional. NÃO inclua favicons ou referências a favicons ou outros ícones externos no código HTML."
           },
           {
             role: "user",
@@ -108,7 +111,6 @@ export async function generateSite(formData) {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="Soluções personalizadas em marketing digital para o crescimento do seu negócio">
-  <link rel="icon" href="favicon.ico" type="image/x-icon">
   <title>${formData.empresa || 'Empresa'} - Marketing Digital</title>
   <link rel="stylesheet" href="style.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -328,6 +330,7 @@ section {
   position: sticky;
   top: 0;
   z-index: 100;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
 }
 
 .header-container {
@@ -385,10 +388,15 @@ section {
 .hero-section {
   padding: 7rem 0 6rem;
   background-color: var(--white);
+  position: relative;
+  /* Preparado para receber uma imagem de fundo */
+  background-color: var(--light-gray);
 }
 
 .hero-content {
   max-width: 650px;
+  position: relative;
+  z-index: 2;
 }
 
 .hero-content h1 {
