@@ -1,9 +1,10 @@
-// Arquivo: src/components/PublishSiteModal.js
+// src/components/PublishSiteModal.js
 
 import React, { useState } from 'react';
 import { Elements } from '@stripe/react-stripe-js';
 import { stripePromise, PUBLISHING_PLANS } from '../utils/stripeAPI';
 import { deploySite, registerDomain } from '../utils/netlifyAPI';
+import { simulateZohoSetup } from '../utils/zohoAPI';
 import '../styles/publishSite.css';
 
 function PublishSiteModal({ 
@@ -20,11 +21,12 @@ function PublishSiteModal({
   const [publishStep, setPublishStep] = useState(1); // 1: Selecionar plano, 2: Pagamento, 3: Publicação, 4: Concluído
   const [publishResult, setPublishResult] = useState(null);
   const [paymentError, setPaymentError] = useState(null);
+  const [emailSetupResult, setEmailSetupResult] = useState(null);
+  const [isSettingUpEmails, setIsSettingUpEmails] = useState(false);
   
-  // Validação de domínio
   const validateDomain = (domain) => {
-    // Regex básica para validação de domínio
-    const domainRegex = /^[a-zA-Z0-9][a-zA-Z0-9-]{1,61}[a-zA-Z0-9]\.[a-zA-Z]{2,}$/;
+    // Regex melhorada para suportar diversos TLDs incluindo compostos como .com.br
+    const domainRegex = /^[a-zA-Z0-9][a-zA-Z0-9-]{1,61}[a-zA-Z0-9](\.[a-zA-Z]{2,})+$/;
     return domainRegex.test(domain);
   };
   
@@ -76,9 +78,7 @@ function PublishSiteModal({
         return;
       }
       
-      // Para planos pagos, primeiro processamos o pagamento
-      // Simulação de pagamento bem-sucedido para o MVP
-      // Em produção, você usaria o fluxo completo do Stripe
+      // Para planos pagos
       setPublishStep(3);
       
       // Deploy do site
@@ -95,6 +95,20 @@ function PublishSiteModal({
         );
         
         deployResult.domain = domainResult;
+        
+        // Setup de emails profissionais com Zoho
+        if (siteData.email) {
+          setIsSettingUpEmails(true);
+          const emailResult = await simulateZohoSetup(
+            customDomain,
+            siteData.email
+          );
+          setEmailSetupResult(emailResult);
+          setIsSettingUpEmails(false);
+          
+          // Adicionar resultado do setup de emails ao deployResult
+          deployResult.emailSetup = emailResult;
+        }
       }
       // Se o plano é de domínio personalizado (cliente já tem o domínio)
       else if (selectedPlan === 'CUSTOM_DOMAIN') {
@@ -110,6 +124,20 @@ function PublishSiteModal({
             }
           ]
         };
+        
+        // Setup de emails profissionais
+        if (siteData.email) {
+          setIsSettingUpEmails(true);
+          const emailResult = await simulateZohoSetup(
+            customDomain,
+            siteData.email
+          );
+          setEmailSetupResult(emailResult);
+          setIsSettingUpEmails(false);
+          
+          // Adicionar resultado do setup de emails ao deployResult
+          deployResult.emailSetup = emailResult;
+        }
       }
       
       setPublishResult(deployResult);
@@ -127,6 +155,7 @@ function PublishSiteModal({
       }
     } finally {
       setIsPublishing(false);
+      setIsSettingUpEmails(false);
     }
   };
   
@@ -272,6 +301,9 @@ function PublishSiteModal({
               <div className="loader"></div>
               <h3>Publicando seu site...</h3>
               <p>Esse processo pode levar alguns instantes.</p>
+              {isSettingUpEmails && (
+                <p>Configurando emails profissionais...</p>
+              )}
             </div>
           )}
           
@@ -317,6 +349,81 @@ function PublishSiteModal({
                   </div>
                 )}
               </div>
+              
+              {/* Seção de resultados de email do Zoho */}
+              {publishResult.emailSetup && (
+                <div className="email-setup-results">
+                  <h4>Emails Profissionais Configurados</h4>
+                  
+                  {publishResult.emailSetup.success ? (
+                    <>
+                      <p className="success-message">
+                        <span className="success-icon">✓</span> Seus emails profissionais foram configurados com sucesso!
+                      </p>
+                      
+                      <div className="email-details">
+                        <p><strong>Detalhes dos emails criados:</strong></p>
+                        
+                        {publishResult.emailSetup.emailAccounts.map((account, index) => (
+                          <div key={index} className="email-account">
+                            <h5>{account.address}</h5>
+                            <p><strong>Senha temporária:</strong> {account.password}</p>
+                            <p className="security-note">Anote esta senha! Por segurança, ela só será exibida uma vez.</p>
+                          </div>
+                        ))}
+                        
+                        <p><strong>Acesse seus emails em:</strong> <a href={publishResult.emailSetup.loginUrl} target="_blank" rel="noopener noreferrer">{publishResult.emailSetup.loginUrl}</a></p>
+                        
+                        <div className="dns-setup">
+                          <p><strong>Para ativar seus emails, adicione estes registros DNS:</strong></p>
+                          
+                          <div className="dns-records">
+                            {publishResult.emailSetup.emailSetupRecords.map((record, index) => (
+                              <div key={index} className="dns-record">
+                                <p><strong>Tipo:</strong> {record.type}</p>
+                                <p><strong>Nome/Host:</strong> {record.name}</p>
+                                <p><strong>Valor/Destino:</strong> {record.value}</p>
+                                {record.priority && <p><strong>Prioridade:</strong> {record.priority}</p>}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="domain-verification">
+                        <h5>Verificação de Domínio</h5>
+                        <p>Para comprovar que você é o proprietário do domínio, adicione também estes registros:</p>
+                        
+                        <div className="dns-records">
+                          {publishResult.emailSetup.verificationRecords.map((record, index) => (
+                            <div key={index} className="dns-record">
+                              <p><strong>Tipo:</strong> {record.type}</p>
+                              <p><strong>Nome/Host:</strong> {record.name}</p>
+                              <p><strong>Valor/Destino:</strong> {record.value}</p>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      
+                      <div className="email-usage">
+                        <h5>Próximos passos:</h5>
+                        <ol>
+                          <li>Adicione todos os registros DNS acima no seu provedor de domínio</li>
+                          <li>Aguarde a propagação DNS (pode levar até 24-48 horas)</li>
+                          <li>Faça login no Zoho Mail com os emails e senhas acima</li>
+                          <li>Altere as senhas temporárias por segurança</li>
+                          <li>Configure encaminhamento ou acessos adicionais se necessário</li>
+                        </ol>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="error-message">
+                      <p><strong>Erro na configuração de emails:</strong> {publishResult.emailSetup.error}</p>
+                      <p>Você pode tentar configurar seus emails manualmente mais tarde no painel do Zoho Mail.</p>
+                    </div>
+                  )}
+                </div>
+              )}
               
               <div className="modal-actions">
                 <button className="secondary-button" onClick={handleClose}>Fechar</button>

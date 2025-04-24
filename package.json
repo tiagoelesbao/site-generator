@@ -17,7 +17,7 @@
         "@stripe/stripe-js": "^1.54.2",
         "axios": "^0.24.0",
         "jszip": "^3.10.1",
-        "netlify": "^6.1.29",it
+        "netlify": "^6.1.29",
         "react": "^18.2.0",
         "react-dom": "^18.2.0",
         "stripe": "^8.174.0"
