@@ -500,3 +500,183 @@
 .email-usage li {
   margin-bottom: 8px;
 }
+
+/* Adicione estes estilos ao final do arquivo src/styles/publishSite.css */
+
+/* Estilos para o modo de teste */
+.testing-mode-option {
+  display: flex;
+  align-items: center;
+  margin-top: 15px;
+  padding: 8px;
+  background-color: #f8f9fa;
+  border-radius: 4px;
+  border-left: 3px solid #ffc107;
+}
+
+.testing-label {
+  margin-left: 8px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.testing-mode-note {
+  margin-top: 5px;
+  font-size: 0.85rem;
+  color: #dc3545;
+  font-style: italic;
+}
+
+.testing-mode-input {
+  border-color: #ffc107 !important;
+  background-color: #fff8e1 !important;
+}
+
+.testing-mode-tag {
+  display: inline-block;
+  background-color: #dc3545;
+  color: white;
+  font-weight: bold;
+  padding: 3px 8px;
+  border-radius: 4px;
+  margin-top: 10px;
+}
+
+.testing-mode-banner {
+  background-color: #fff3cd;
+  border: 1px solid #ffeeba;
+  border-radius: 4px;
+  padding: 10px;
+  margin: 15px 0;
+  text-align: center;
+}
+
+.testing-mode-banner p {
+  margin: 5px 0;
+  color: #856404;
+  font-weight: 500;
+}
+
+.testing-mode-banner p:first-child {
+  font-weight: 700;
+}
+
+.test-button {
+  padding: 10px 20px;
+  border-radius: 4px;
+  border: none;
+  font-size: 1rem;
+  cursor: pointer;
+  background-color: #ffc107;
+  color: #212529;
+  transition: background-color 0.3s;
+}
+
+.test-button:hover {
+  background-color: #e0a800;
+}
+
+.test-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* Estilos para configuração automática de DNS */
+.dns-auto-configured {
+  background-color: #f0f8ff;
+  border-radius: 8px;
+  padding: 20px;
+  margin: 15px 0;
+  border-left: 4px solid #4285f4;
+}
+
+.auto-dns-badge {
+  display: inline-flex;
+  align-items: center;
+  background-color: #4285f4;
+  color: white;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 20px;
+  margin-bottom: 15px;
+}
+
+.auto-icon {
+  background-color: white;
+  color: #4285f4;
+  width: 20px;
+  height: 20px;
+  font-size: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  margin-right: 8px;
+}
+
+.email-ready-estimate {
+  margin-top: 20px;
+  padding-top: 15px;
+  border-top: 1px solid #e0e0e0;
+}
+
+.time-estimate-bar {
+  margin-top: 15px;
+}
+
+.time-stages {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+  padding: 20px 0;
+}
+
+.time-stages::before {
+  content: "";
+  position: absolute;
+  top: 32px;
+  left: 40px;
+  right: 40px;
+  height: 4px;
+  background-color: #e0e0e0;
+  z-index: 0;
+}
+
+.time-stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  z-index: 1;
+}
+
+.stage-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-color: #e0e0e0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 8px;
+  color: #757575;
+  font-weight: bold;
+}
+
+.time-stage.active .stage-icon {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.stage-label {
+  font-size: 0.85rem;
+  text-align: center;
+  color: #757575;
+  max-width: 80px;
+}
+
+.time-stage.active .stage-label {
+  color: #4CAF50;
+  font-weight: 500;
+}

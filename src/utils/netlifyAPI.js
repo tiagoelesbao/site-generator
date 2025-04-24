@@ -1,4 +1,4 @@
-// Arquivo: src/utils/netlifyAPI.js
+// src/utils/netlifyAPI.js - Versão com automatização DNS
 
 import axios from 'axios';
 
@@ -64,47 +64,13 @@ export async function deploySite(zipFile, siteName) {
 }
 
 /**
- * Configura um domínio personalizado para o site
- * @param {string} siteId - ID do site no Netlify
- * @param {string} domainName - Nome do domínio a ser configurado
- * @returns {Promise} - Resultado da operação com instruções DNS
- */
-export async function setupCustomDomain(siteId, domainName) {
-  try {
-    // 1. Verificar disponibilidade do domínio
-    const domainCheckResponse = await netlifyApi.post(`/domains/${domainName}/dns_check`);
-    
-    if (!domainCheckResponse.data.available) {
-      throw new Error('Domínio não está disponível para registro');
-    }
-    
-    // 2. Adicionar domínio personalizado ao site
-    const domainResponse = await netlifyApi.post(`/sites/${siteId}/domains`, {
-      hostname: domainName
-    });
-    
-    // 3. Obter instruções DNS para configuração
-    const dnsResponse = await netlifyApi.get(`/sites/${siteId}/dns`);
-    
-    return {
-      domain: domainName,
-      status: 'pending_dns_setup',
-      dns_records: dnsResponse.data,
-      domain_id: domainResponse.data.id
-    };
-  } catch (error) {
-    console.error('Erro ao configurar domínio personalizado:', error);
-    throw new Error(`Falha ao configurar domínio: ${error.message}`);
-  }
-}
-
-/**
- * Registra um novo domínio através do Netlify
+ * Registra um novo domínio através do Netlify e configura DNS automaticamente
  * @param {string} siteId - ID do site no Netlify
  * @param {string} domainName - Nome do domínio a ser registrado
+ * @param {object} emailConfig - Configurações de email para configurar DNS automaticamente
  * @returns {Promise} - Resultado da operação com status do registro
  */
-export async function registerDomain(siteId, domainName) {
+export async function registerDomain(siteId, domainName, emailConfig = null) {
   try {
     // 1. Verificar disponibilidade do domínio
     const domainCheckResponse = await netlifyApi.post(`/domains/${domainName}/registry/check`);
@@ -123,14 +89,93 @@ export async function registerDomain(siteId, domainName) {
       hostname: domainName
     });
     
+    // 4. Aguardar pela confirmação do registro (pode levar algum tempo)
+    // Em uma implementação real, isso seria feito com um webhook ou verificação periódica
+    
+    // 5. Se temos configurações de email, adicionamos os registros DNS automaticamente
+    if (emailConfig && registerResponse.data.state === 'done') {
+      await configureEmailDNS(domainName, emailConfig);
+    }
+    
     return {
       domain: domainName,
       status: registerResponse.data.state,
-      registration_id: registerResponse.data.id
+      registration_id: registerResponse.data.id,
+      dnsConfigured: emailConfig ? true : false
     };
   } catch (error) {
     console.error('Erro ao registrar domínio:', error);
     throw new Error(`Falha ao registrar domínio: ${error.message}`);
+  }
+}
+
+/**
+ * Configura registros DNS para serviços de email no domínio
+ * @param {string} domainName - Nome do domínio
+ * @param {object} emailConfig - Configurações de email (MX, TXT, CNAME)
+ * @returns {Promise} - Resultado da operação
+ */
+export async function configureEmailDNS(domainName, emailConfig) {
+  try {
+    const dnsRecords = [];
+    
+    // Adicionar registros MX para email
+    if (emailConfig.mxRecords && emailConfig.mxRecords.length > 0) {
+      for (const record of emailConfig.mxRecords) {
+        dnsRecords.push({
+          type: 'MX',
+          hostname: domainName,
+          value: record.value,
+          ttl: 3600,
+          priority: record.priority || 10
+        });
+      }
+    }
+    
+    // Adicionar registros TXT para SPF, DKIM, etc.
+    if (emailConfig.txtRecords && emailConfig.txtRecords.length > 0) {
+      for (const record of emailConfig.txtRecords) {
+        dnsRecords.push({
+          type: 'TXT',
+          hostname: record.name || domainName,
+          value: record.value,
+          ttl: 3600
+        });
+      }
+    }
+    
+    // Adicionar registros CNAME para verificação
+    if (emailConfig.cnameRecords && emailConfig.cnameRecords.length > 0) {
+      for (const record of emailConfig.cnameRecords) {
+        dnsRecords.push({
+          type: 'CNAME',
+          hostname: record.name,
+          value: record.value,
+          ttl: 3600
+        });
+      }
+    }
+    
+    // Adicionar todos os registros DNS de uma vez
+    if (dnsRecords.length > 0) {
+      const dnsResponse = await netlifyApi.post(`/dns_zones/${domainName}/dns_records`, {
+        records: dnsRecords
+      });
+      
+      return {
+        success: true,
+        records: dnsResponse.data,
+        message: `Configurados ${dnsRecords.length} registros DNS para email`
+      };
+    }
+    
+    return {
+      success: false,
+      message: 'Nenhum registro DNS para configurar'
+    };
+  } catch (error) {
+    console.error('Erro ao configurar DNS para email:', error);
+    throw new Error(`Falha ao configurar DNS: ${error.message}`);
   }
 }
 
@@ -158,7 +203,7 @@ export async function checkSiteStatus(siteId) {
 
 export default {
   deploySite,
-  setupCustomDomain,
   registerDomain,
+  configureEmailDNS,
   checkSiteStatus
 };

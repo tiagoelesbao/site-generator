@@ -1,5 +1,9 @@
 export async function generateSite(formData) {
   // Construção do prompt para OpenAI
+  const randomTemplateIndex = Math.floor(Math.random() * siteTemplates.length);
+  const selectedTemplate = siteTemplates[randomTemplateIndex];
+
+  // Construção do prompt para OpenAI, incluindo detalhes do template selecionado
   const prompt = `
     Gere um site responsivo completo para marketing digital baseado nas seguintes informações:
     
@@ -37,7 +41,15 @@ export async function generateSite(formData) {
     - Layout de duas colunas na seção de contato (formulário e informações)
     - Navegação fixa no topo
     - Seção hero preparada para receber uma imagem de fundo
-    
+
+    BASE PARA ESTILO VISUAL:
+    - Esquema de cores: ${selectedTemplate.colors.join(', ')}
+    - Fontes: ${selectedTemplate.fonts.heading} para títulos, ${selectedTemplate.fonts.body} para o corpo do texto
+    - Animações: ${selectedTemplate.animations.join(', ')}
+    - Layout: ${selectedTemplate.layout}
+    - Estilo dos cards: ${selectedTemplate.cardStyle}
+    - Estilo da seção hero: ${selectedTemplate.heroStyle}
+
     REQUISITOS:
     - Gere o código HTML completo para a página inicial dentro de um bloco de código com a sintaxe \`\`\`html
     - Gere o código CSS completo dentro de um bloco de código com a sintaxe \`\`\`css

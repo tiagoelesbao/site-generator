@@ -175,9 +175,10 @@ function generateDefaultHTML() {
     <div class="container">
       <div class="footer-content">
         <div class="footer-company">
-          <p class="footer-company-name">Company name: Razão Social</p>
-          <p class="footer-company-details">CNPJ 00.000.000/0001-00</p>
-          <p class="footer-address">Rua Exemplo 123, Cidade, Estado</p>
+          <p class="footer-company-name">${data.empresa || 'Empresa'}: ${data.razaoSocial || 'Razão Social'}</p>
+          <p class="footer-company-details">CNPJ ${data.cnpj || '00.000.000/0001-00'}</p>
+          <p class="footer-address">${data.endereco || 'Endereço da Empresa'}</p>
+          <p class="footer-copyright">© ${new Date().getFullYear()} ${data.empresa || 'Empresa'}. Todos os direitos reservados.</p>
         </div>
         
         <div class="footer-links">
@@ -194,17 +195,35 @@ function generateDefaultHTML() {
 }
 
 function generateDefaultCSS() {
+  // Gerar cores aleatórias para variação visual
+  const hue = Math.floor(Math.random() * 360); // Valor entre 0 e 359
+  const accentHue = (hue + 180) % 360; // Cor complementar para destaque
+  
+  // Variabilidade no layout
+  const containerWidth = [1140, 1200, 1080, 1240][Math.floor(Math.random() * 4)];
+  const borderRadius = [4, 6, 8, 12][Math.floor(Math.random() * 4)];
+  const buttonStyle = ['rounded', 'pill', 'square'][Math.floor(Math.random() * 3)];
+  const buttonBorderRadius = buttonStyle === 'rounded' ? '4px' : 
+                           buttonStyle === 'pill' ? '20px' : '0';
+  
   return `/* Base reset e estilos gerais */
-:root {
-  --primary-color: #000;
-  --text-color: #333;
-  --light-gray: #f5f5f5;
-  --medium-gray: #e0e0e0;
-  --accent-color: #0066ff;
-  --white: #fff;
-  --container-width: 1140px;
-  --transition: all 0.3s ease;
-}
+  :root {
+    --primary-color: hsl(${hue}, 70%, 40%);
+    --accent-color: hsl(${accentHue}, 70%, 50%);
+    --text-color: #333;
+    --light-gray: #f5f5f5;
+    --medium-gray: #e0e0e0;
+    --white: #fff;
+    --container-width: ${containerWidth}px;
+    --border-radius: ${borderRadius}px;
+    --transition: all 0.3s ease;
+  }
+
+    /* Restante do CSS com as variáveis */
+  .submit-btn {
+    /* ... propriedades existentes ... */
+    border-radius: ${buttonBorderRadius};
+  }
 
 * {
   margin: 0;

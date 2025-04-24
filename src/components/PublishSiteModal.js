@@ -1,10 +1,10 @@
-// src/components/PublishSiteModal.js
+// src/components/PublishSiteModal.js - Versão atualizada com modo de teste
 
 import React, { useState } from 'react';
 import { Elements } from '@stripe/react-stripe-js';
 import { stripePromise, PUBLISHING_PLANS } from '../utils/stripeAPI';
 import { deploySite, registerDomain } from '../utils/netlifyAPI';
-import { simulateZohoSetup } from '../utils/zohoAPI';
+import { simulateZohoSetup, forceZohoDemo } from '../utils/zohoAPI';
 import '../styles/publishSite.css';
 
 function PublishSiteModal({ 
@@ -23,6 +23,7 @@ function PublishSiteModal({
   const [paymentError, setPaymentError] = useState(null);
   const [emailSetupResult, setEmailSetupResult] = useState(null);
   const [isSettingUpEmails, setIsSettingUpEmails] = useState(false);
+  const [testingMode, setTestingMode] = useState(false);
   
   const validateDomain = (domain) => {
     // Regex melhorada para suportar diversos TLDs incluindo compostos como .com.br
@@ -37,13 +38,25 @@ function PublishSiteModal({
     // Resetar domain se voltar para plano básico
     if (planId === 'BASIC') {
       setCustomDomain('');
+      setTestingMode(false);
+    }
+  };
+  
+  // Toggle modo de teste
+  const toggleTestingMode = () => {
+    setTestingMode(!testingMode);
+    if (!testingMode && !customDomain) {
+      // Preenchimento automático de domínio para modo de teste
+      setCustomDomain(siteData.empresa 
+        ? `${siteData.empresa.toLowerCase().replace(/[^\w]/g, '')}.com.br`
+        : 'exemplo.com.br');
     }
   };
   
   // Avançar para o passo de pagamento
   const handleContinueToPayment = () => {
-    // Validar domínio para planos que precisam
-    if (selectedPlan !== 'BASIC' && !validateDomain(customDomain)) {
+    // Validar domínio para planos que precisam (ignorar em modo de teste)
+    if (selectedPlan !== 'BASIC' && !testingMode && !validateDomain(customDomain)) {
       setPaymentError('Por favor, insira um domínio válido.');
       return;
     }
@@ -52,7 +65,57 @@ function PublishSiteModal({
     setPublishStep(2);
   };
   
+  // Testar apenas a configuração de e-mail
+  const handleTestEmailSetup = async () => {
+    try {
+      setIsSettingUpEmails(true);
+      setPaymentError(null);
+      
+      // Forçar simulação da configuração de e-mail
+      const emailResult = await forceZohoDemo(
+        customDomain,
+        siteData.email || 'admin@example.com'
+      );
+      
+      setEmailSetupResult(emailResult);
+      
+      // Criar um resultado de publicação simulado para exibir
+      const simulatedResult = {
+        siteId: 'site_' + Math.random().toString(36).substring(2, 11),
+        deployId: 'deploy_' + Math.random().toString(36).substring(2, 11),
+        siteUrl: 'https://site-teste.netlify.app',
+        netlifyUrl: `https://site-teste.netlify.app`,
+        status: 'success',
+        domainInstructions: {
+          domain: customDomain,
+          status: 'demo_mode',
+          dns_instructions: [
+            {
+              type: 'CNAME',
+              hostname: customDomain,
+              value: 'site-teste.netlify.app',
+              ttl: 3600
+            }
+          ]
+        },
+        emailSetup: emailResult
+      };
+      
+      setPublishResult(simulatedResult);
+      setPublishStep(4);
+      
+    } catch (error) {
+      console.error('Erro na simulação de email:', error);
+      setPaymentError(`Erro ao simular configuração de email: ${error.message}`);
+    } finally {
+      setIsSettingUpEmails(false);
+    }
+  };
+  
   // Processar pagamento e publicar
+  // Atualização no método handlePublish do PublishSiteModal.js
+  // Substitua a função handlePublish atual por esta versão:
+
   const handlePublish = async () => {
     try {
       setIsPublishing(true);
@@ -81,6 +144,57 @@ function PublishSiteModal({
       // Para planos pagos
       setPublishStep(3);
       
+      // Se estamos no modo de teste, simulamos tudo
+      if (testingMode) {
+        // Simular deploy bem-sucedido
+        const simulatedDeployResult = {
+          siteId: 'site_' + Math.random().toString(36).substring(2, 11),
+          deployId: 'deploy_' + Math.random().toString(36).substring(2, 11),
+          siteUrl: `https://${siteData.empresa ? siteData.empresa.toLowerCase().replace(/[^\w]/g, '') : 'meu-site'}.netlify.app`,
+          netlifyUrl: `https://${siteData.empresa ? siteData.empresa.toLowerCase().replace(/[^\w]/g, '') : 'meu-site'}.netlify.app`,
+          status: 'success'
+        };
+        
+        // Simular configuração de domínio
+        simulatedDeployResult.domainInstructions = {
+          domain: customDomain,
+          status: 'demo_mode',
+          dns_instructions: [
+            {
+              type: 'CNAME',
+              hostname: customDomain,
+              value: simulatedDeployResult.netlifyUrl,
+              ttl: 3600
+            }
+          ]
+        };
+        
+        // Simular setup de emails com configuração DNS automática
+        setIsSettingUpEmails(true);
+        const emailResult = await forceZohoDemo(
+          customDomain,
+          siteData.email || 'admin@example.com'
+        );
+        // Simulamos que a configuração DNS foi feita automaticamente
+        emailResult.dnsConfigured = true;
+        emailResult.emailSetupInstructions = "DNS configurado automaticamente! Suas caixas de email estarão ativas em breve.";
+        
+        setEmailSetupResult(emailResult);
+        simulatedDeployResult.emailSetup = emailResult;
+        setIsSettingUpEmails(false);
+        
+        setPublishResult(simulatedDeployResult);
+        setPublishStep(4);
+        
+        if (onPublishSuccess) {
+          onPublishSuccess(simulatedDeployResult);
+        }
+        
+        return;
+      }
+      
+      // Implementação real para produção
+      
       // Deploy do site
       const deployResult = await deploySite(
         zipBlob, 
@@ -96,13 +210,17 @@ function PublishSiteModal({
         
         deployResult.domain = domainResult;
         
-        // Setup de emails profissionais com Zoho
+        // Setup de emails profissionais com Zoho, com configuração automática de DNS
         if (siteData.email) {
           setIsSettingUpEmails(true);
-          const emailResult = await simulateZohoSetup(
+          
+          const emailResult = await setupZohoWithNetlify(
             customDomain,
-            siteData.email
+            siteData.email,
+            deployResult.siteId,
+            true // Indicamos que é um domínio registrado via Netlify
           );
+          
           setEmailSetupResult(emailResult);
           setIsSettingUpEmails(false);
           
@@ -125,7 +243,7 @@ function PublishSiteModal({
           ]
         };
         
-        // Setup de emails profissionais
+        // Setup de emails profissionais - neste caso o cliente precisa configurar o DNS manualmente
         if (siteData.email) {
           setIsSettingUpEmails(true);
           const emailResult = await simulateZohoSetup(
@@ -165,6 +283,7 @@ function PublishSiteModal({
       setPublishStep(1);
       setPaymentError(null);
       setPublishResult(null);
+      setTestingMode(false);
       onClose();
     }
   };
@@ -226,12 +345,31 @@ function PublishSiteModal({
                     placeholder="exemplo.com.br"
                     value={customDomain}
                     onChange={(e) => setCustomDomain(e.target.value)}
+                    className={testingMode ? "testing-mode-input" : ""}
                   />
                   <p className="domain-hint">
                     {selectedPlan === 'DOMAIN_REGISTRATION' 
                       ? 'Domínio a ser registrado' 
                       : 'Domínio que você já possui'}
                   </p>
+                  
+                  {/* Opção de modo de teste */}
+                  <div className="testing-mode-option">
+                    <input
+                      type="checkbox"
+                      id="testing-mode"
+                      checked={testingMode}
+                      onChange={toggleTestingMode}
+                    />
+                    <label htmlFor="testing-mode" className="testing-label">
+                      Modo de teste (para desenvolvimento)
+                    </label>
+                  </div>
+                  {testingMode && (
+                    <p className="testing-mode-note">
+                      No modo de teste, o domínio não será verificado e a configuração de email será simulada para fins de desenvolvimento.
+                    </p>
+                  )}
                 </div>
               )}
               
@@ -260,11 +398,13 @@ function PublishSiteModal({
                       <p><strong>Plano:</strong> {PUBLISHING_PLANS[selectedPlan].name}</p>
                       <p><strong>Valor:</strong> R$ {(PUBLISHING_PLANS[selectedPlan].price / 100).toFixed(2)}</p>
                       {customDomain && <p><strong>Domínio:</strong> {customDomain}</p>}
+                      {testingMode && <p className="testing-mode-tag">MODO DE TESTE ATIVADO</p>}
                     </div>
                     
                     <p className="payment-notice">
-                      Para o MVP, estamos simulando o pagamento. 
-                      Clique em "Publicar" para continuar sem pagamento real.
+                      {testingMode 
+                        ? "Modo de teste ativado. O fluxo completo será simulado sem pagamento real."
+                        : "Para o MVP, estamos simulando o pagamento. Clique em \"Publicar\" para continuar sem pagamento real."}
                     </p>
                   </div>
                 </Elements>
@@ -284,6 +424,17 @@ function PublishSiteModal({
                 >
                   Voltar
                 </button>
+                
+                {testingMode && selectedPlan !== 'BASIC' && (
+                  <button 
+                    className="test-button" 
+                    onClick={handleTestEmailSetup}
+                    disabled={isPublishing}
+                  >
+                    Testar apenas Email
+                  </button>
+                )}
+                
                 <button 
                   className="primary-button" 
                   onClick={handlePublish}
@@ -304,6 +455,9 @@ function PublishSiteModal({
               {isSettingUpEmails && (
                 <p>Configurando emails profissionais...</p>
               )}
+              {testingMode && (
+                <p className="testing-mode-tag">MODO DE TESTE ATIVADO</p>
+              )}
             </div>
           )}
           
@@ -312,6 +466,13 @@ function PublishSiteModal({
             <div className="publish-success">
               <div className="success-icon">✓</div>
               <h3>Site publicado com sucesso!</h3>
+              
+              {testingMode && (
+                <div className="testing-mode-banner">
+                  <p>⚠️ MODO DE TESTE ⚠️</p>
+                  <p>Esta é uma simulação para fins de desenvolvimento.</p>
+                </div>
+              )}
               
               <div className="site-info">
                 <p><strong>URL do site:</strong></p>
@@ -351,6 +512,7 @@ function PublishSiteModal({
               </div>
               
               {/* Seção de resultados de email do Zoho */}
+              {/* Seção de resultados de email do Zoho */}
               {publishResult.emailSetup && (
                 <div className="email-setup-results">
                   <h4>Emails Profissionais Configurados</h4>
@@ -374,42 +536,78 @@ function PublishSiteModal({
                         
                         <p><strong>Acesse seus emails em:</strong> <a href={publishResult.emailSetup.loginUrl} target="_blank" rel="noopener noreferrer">{publishResult.emailSetup.loginUrl}</a></p>
                         
-                        <div className="dns-setup">
-                          <p><strong>Para ativar seus emails, adicione estes registros DNS:</strong></p>
-                          
-                          <div className="dns-records">
-                            {publishResult.emailSetup.emailSetupRecords.map((record, index) => (
-                              <div key={index} className="dns-record">
-                                <p><strong>Tipo:</strong> {record.type}</p>
-                                <p><strong>Nome/Host:</strong> {record.name}</p>
-                                <p><strong>Valor/Destino:</strong> {record.value}</p>
-                                {record.priority && <p><strong>Prioridade:</strong> {record.priority}</p>}
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-                      
-                      <div className="domain-verification">
-                        <h5>Verificação de Domínio</h5>
-                        <p>Para comprovar que você é o proprietário do domínio, adicione também estes registros:</p>
-                        
-                        <div className="dns-records">
-                          {publishResult.emailSetup.verificationRecords.map((record, index) => (
-                            <div key={index} className="dns-record">
-                              <p><strong>Tipo:</strong> {record.type}</p>
-                              <p><strong>Nome/Host:</strong> {record.name}</p>
-                              <p><strong>Valor/Destino:</strong> {record.value}</p>
+                        {/* Condicionalmente mostrar instruções DNS ou mensagem de configuração automática */}
+                        {publishResult.emailSetup.dnsConfigured ? (
+                          <div className="dns-auto-configured">
+                            <div className="auto-dns-badge">
+                              <span className="auto-icon">✓</span> DNS Configurado Automaticamente
                             </div>
-                          ))}
-                        </div>
+                            <p>Todas as configurações DNS necessárias para seus emails foram feitas automaticamente! </p>
+                            <p>O processo de verificação e ativação pode levar até 24-48 horas. Após este período, suas caixas de email estarão prontas para uso.</p>
+                            
+                            {/* Tempo estimado para disponibilidade */}
+                            <div className="email-ready-estimate">
+                              <h5>Tempo estimado até disponibilidade:</h5>
+                              <div className="time-estimate-bar">
+                                <div className="time-stages">
+                                  <div className="time-stage active">
+                                    <div className="stage-icon">✓</div>
+                                    <div className="stage-label">Configurado</div>
+                                  </div>
+                                  <div className="time-stage">
+                                    <div className="stage-icon">⟳</div>
+                                    <div className="stage-label">Propagação<br/>(24h)</div>
+                                  </div>
+                                  <div className="time-stage">
+                                    <div className="stage-icon">✉</div>
+                                    <div className="stage-label">Pronto</div>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        ) : (
+                          <>
+                            <div className="dns-setup">
+                              <p><strong>Para ativar seus emails, adicione estes registros DNS:</strong></p>
+                              
+                              <div className="dns-records">
+                                {publishResult.emailSetup.emailSetupRecords.map((record, index) => (
+                                  <div key={index} className="dns-record">
+                                    <p><strong>Tipo:</strong> {record.type}</p>
+                                    <p><strong>Nome/Host:</strong> {record.name}</p>
+                                    <p><strong>Valor/Destino:</strong> {record.value}</p>
+                                    {record.priority && <p><strong>Prioridade:</strong> {record.priority}</p>}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                            
+                            <div className="domain-verification">
+                              <h5>Verificação de Domínio</h5>
+                              <p>Para comprovar que você é o proprietário do domínio, adicione também estes registros:</p>
+                              
+                              <div className="dns-records">
+                                {publishResult.emailSetup.verificationRecords.map((record, index) => (
+                                  <div key={index} className="dns-record">
+                                    <p><strong>Tipo:</strong> {record.type}</p>
+                                    <p><strong>Nome/Host:</strong> {record.name}</p>
+                                    <p><strong>Valor/Destino:</strong> {record.value}</p>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          </>
+                        )}
                       </div>
                       
                       <div className="email-usage">
                         <h5>Próximos passos:</h5>
                         <ol>
-                          <li>Adicione todos os registros DNS acima no seu provedor de domínio</li>
-                          <li>Aguarde a propagação DNS (pode levar até 24-48 horas)</li>
+                          {!publishResult.emailSetup.dnsConfigured && (
+                            <li>Adicione todos os registros DNS acima no seu provedor de domínio</li>
+                          )}
+                          <li>Aguarde a {publishResult.emailSetup.dnsConfigured ? 'finalização do processo de ativação' : 'propagação DNS'} (pode levar até 24-48 horas)</li>
                           <li>Faça login no Zoho Mail com os emails e senhas acima</li>
                           <li>Altere as senhas temporárias por segurança</li>
                           <li>Configure encaminhamento ou acessos adicionais se necessário</li>
@@ -427,14 +625,16 @@ function PublishSiteModal({
               
               <div className="modal-actions">
                 <button className="secondary-button" onClick={handleClose}>Fechar</button>
-                <a 
-                  href={publishResult.netlifyUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="primary-button visit-button"
-                >
-                  Visitar Site
-                </a>
+                {!testingMode && (
+                  <a 
+                    href={publishResult.netlifyUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="primary-button visit-button"
+                  >
+                    Visitar Site
+                  </a>
+                )}
               </div>
             </div>
           )}
