@@ -18,6 +18,9 @@ function DownloadButton({
   const [errorMessage, setErrorMessage] = useState('');
   const [zipBlob, setZipBlob] = useState(null); // Armazenar o blob do ZIP
   const [isPublishModalOpen, setIsPublishModalOpen] = useState(false); // Estado para o modal
+  const [isPublishing, setIsPublishing] = useState(false); // Estado de publicação
+  const [publishResult, setPublishResult] = useState(null); // Resultado da publicação
+  const [publishError, setPublishError] = useState(null); // Erro de publicação
 
   const validateForm = () => {
     const requiredFields = [
@@ -127,18 +130,83 @@ function DownloadButton({
     }
   };
   
+  // Função atualizada para publicação online usando Netlify Functions
   const handlePublishSite = async () => {
-    // Se já temos o ZIP, abrir o modal
-    if (zipBlob) {
-      setIsPublishModalOpen(true);
-      return;
+    try {
+      // Se já temos o ZIP, abrir o modal primeiro
+      if (zipBlob) {
+        setIsPublishModalOpen(true);
+        return;
+      }
+      
+      // Se não temos o ZIP, gerar primeiro
+      const zipBlobResult = await generateSiteFiles();
+      
+      if (zipBlobResult) {
+        // Abrir o modal com o ZIP pronto
+        setIsPublishModalOpen(true);
+      }
+    } catch (error) {
+      console.error('Erro ao preparar site para publicação:', error);
+      setErrorMessage(`Erro ao preparar site: ${error.message}`);
     }
+  };
+
+  // Função para processar a publicação real (chamada a partir do modal)
+  const handlePublishToNetlify = async () => {
+    if (!zipBlob) return;
     
-    // Se não temos o ZIP, gerar primeiro
-    const zipBlobResult = await generateSiteFiles();
-    
-    if (zipBlobResult) {
-      setIsPublishModalOpen(true);
+    try {
+      setIsPublishing(true);
+      setPublishError(null);
+      
+      // Converter o zipBlob para base64
+      const reader = new FileReader();
+      reader.readAsDataURL(zipBlob);
+      
+      const zipBase64 = await new Promise((resolve) => {
+        reader.onloadend = () => {
+          // Remove o prefixo "data:application/zip;base64," para obter apenas o base64
+          const base64 = reader.result.split(',')[1];
+          resolve(base64);
+        };
+      });
+      
+      // Chamar a função Netlify
+      const response = await fetch('/.netlify/functions/deploy-site', {
+        method: 'POST',
+        body: JSON.stringify({
+          siteName: formData.empresa.toLowerCase().replace(/[^\w]/g, '-'),
+          zipFileBase64: zipBase64
+        })
+      });
+      
+      const result = await response.json();
+      
+      if (response.ok) {
+        setPublishResult(result);
+        
+        // Chamar o callback de sucesso
+        if (handlePublishSuccess) {
+          handlePublishSuccess(result);
+        }
+        
+        return result;
+      } else {
+        throw new Error(result.message || 'Erro ao publicar site');
+      }
+    } catch (error) {
+      console.error('Erro ao publicar site:', error);
+      setPublishError(error.message);
+      
+      // Chamar o callback de erro
+      if (handlePublishError) {
+        handlePublishError(error);
+      }
+      
+      throw error;
+    } finally {
+      setIsPublishing(false);
     }
   };
   
@@ -151,8 +219,6 @@ function DownloadButton({
     console.error('Erro ao publicar site:', error);
     setErrorMessage(`Erro na publicação: ${error.message}`);
   };
-  
-  // Funções para o template padrão permanecem iguais...
   
   // Função para gerar política de privacidade padrão caso ocorra erro
   const getDefaultPrivacyPolicy = (data) => {
@@ -182,7 +248,7 @@ function DownloadButton({
         <button 
           className="download-button"
           onClick={handleGenerateSite}
-          disabled={isGenerating}
+          disabled={isGenerating || isPublishing}
         >
           {isGenerating ? 'Gerando site...' : 'Gerar e Baixar Site'}
         </button>
@@ -190,9 +256,9 @@ function DownloadButton({
         <button 
           className="publish-button"
           onClick={handlePublishSite}
-          disabled={isGenerating}
+          disabled={isGenerating || isPublishing}
         >
-          {isGenerating ? 'Gerando site...' : 'Gerar e Publicar Online'}
+          {isGenerating ? 'Gerando site...' : isPublishing ? 'Publicando...' : 'Gerar e Publicar Online'}
         </button>
       </div>
       
@@ -208,6 +274,10 @@ function DownloadButton({
         onClose={() => setIsPublishModalOpen(false)}
         siteData={formData}
         zipBlob={zipBlob}
+        onPublish={handlePublishToNetlify}
+        isPublishing={isPublishing}
+        publishResult={publishResult}
+        publishError={publishError}
         onPublishSuccess={handlePublishSuccess}
         onPublishError={handlePublishError}
       />
