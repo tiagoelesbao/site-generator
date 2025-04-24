@@ -69,3 +69,24 @@
     color: #777;
     margin-top: 5px;
   }
+
+@media (max-width: 576px) {
+  .form-section {
+    padding-bottom: 15px;
+    margin-bottom: 15px;
+  }
+  
+  .service-group {
+    padding: 10px;
+    margin-bottom: 15px;
+  }
+  
+  .form-field label {
+    font-size: 0.9rem;
+  }
+  
+  .field-input {
+    padding: 8px;
+    font-size: 0.9rem;
+  }
+}

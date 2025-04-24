@@ -48,6 +48,17 @@ export function extractFiles(response) {
 
 // Funções para gerar conteúdo padrão
 function generateDefaultHTML() {
+  // Criar uma variável data para usar no template
+  const currentDate = new Date();
+  const data = {
+    empresa: 'Empresa',
+    razaoSocial: 'Razão Social',
+    cnpj: '00.000.000/0001-00',
+    endereco: 'Endereço da Empresa',
+    email: 'contato@empresa.com',
+    // outros valores padrão...
+  };
+
   return `<!DOCTYPE html>
 <html lang="pt-BR">
 <head>

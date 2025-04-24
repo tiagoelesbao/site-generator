@@ -62,6 +62,20 @@ export async function createCheckoutSession(planId, siteName, siteDetails = {}) 
       throw new Error('Plano de publicação inválido');
     }
     
+    // Sanitizar dados para evitar injeção de scripts
+    const sanitizedSiteName = siteName
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+    
+    // Limitar exposição de dados sensíveis
+    const safeDetails = {
+      // Incluir apenas campos necessários
+      company_name: siteDetails.empresa || '',
+      domain: siteDetails.dominio || '',
+      plan_name: plan.name
+    };
+    
     const response = await fetch('/api/create-checkout-session', {
       method: 'POST',
       headers: {
@@ -69,14 +83,16 @@ export async function createCheckoutSession(planId, siteName, siteDetails = {}) 
       },
       body: JSON.stringify({
         planId: planId,
-        siteName: siteName,
+        siteName: sanitizedSiteName,
         price: plan.price,
-        metadata: {
-          ...siteDetails,
-          plan_name: plan.name
-        }
+        metadata: safeDetails
       }),
     });
+    
+    // Verificar status HTTP antes de processar JSON
+    if (!response.ok) {
+      throw new Error(`Erro HTTP: ${response.status}`);
+    }
     
     const session = await response.json();
     

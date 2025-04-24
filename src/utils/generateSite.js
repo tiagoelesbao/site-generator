@@ -1,3 +1,5 @@
+import { siteTemplates } from '../templates/siteTemplates';
+
 export async function generateSite(formData) {
   // Construção do prompt para OpenAI
   const randomTemplateIndex = Math.floor(Math.random() * siteTemplates.length);

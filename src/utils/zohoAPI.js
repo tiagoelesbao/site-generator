@@ -160,18 +160,37 @@ export async function setupZohoWithNetlify(domain, adminEmail, siteId, isNetlify
         zohoSetupResult.emailSetupInstructions = "DNS configurado automaticamente! Suas caixas de email estarão ativas em breve.";
       } catch (dnsError) {
         console.error('Erro ao configurar DNS automaticamente:', dnsError);
+        // Log mais detalhado para depuração
+        console.error('Detalhes do erro:', JSON.stringify({
+          message: dnsError.message,
+          stack: dnsError.stack,
+          response: dnsError.response?.data
+        }));
+        
         zohoSetupResult.dnsConfigured = false;
         zohoSetupResult.dnsConfigurationError = dnsError.message;
-        
-        // Manter as instruções manuais como fallback
+        // Não interromper o fluxo, continuar com o fallback
         zohoSetupResult.emailSetupInstructions = "Não foi possível configurar o DNS automaticamente. Use as instruções manuais abaixo.";
       }
     }
     
     return zohoSetupResult;
   } catch (error) {
-    console.error('Erro ao configurar Zoho com Netlify:', error);
-    throw new Error(`Falha na configuração de email: ${error.message}`);
+    // Log mais detalhado
+    console.error('Erro fatal ao configurar Zoho com Netlify:', error);
+    console.error('Detalhes do erro:', JSON.stringify({
+      message: error.message,
+      stack: error.stack,
+      response: error.response?.data
+    }));
+    
+    // Retornar um resultado de erro mais informativo
+    return {
+      success: false,
+      error: `Falha na configuração de email: ${error.message}`,
+      errorDetails: error.response?.data || {},
+      domain: domain
+    };
   }
 }
 

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Form from './components/Form';
 import DownloadButton from './components/DownloadButton';
 import './styles/main.css';
@@ -27,6 +27,14 @@ function App() {
   const [heroImage, setHeroImage] = useState(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isGenerated, setIsGenerated] = useState(false);
+  const [generationError, setGenerationError] = useState(null);
+  
+  // Use useEffect para limpar o estado de erro
+  useEffect(() => {
+    if (isGenerating) {
+      setGenerationError(null);
+    }
+  }, [isGenerating]);
   
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -50,6 +58,7 @@ function App() {
           formData={formData}
           onInputChange={handleInputChange}
           onImageUpload={handleImageUpload}
+          disabled={isGenerating} // Desabilitar inputs durante geração
         />
         
         <DownloadButton 
@@ -58,11 +67,19 @@ function App() {
           isGenerating={isGenerating}
           setIsGenerating={setIsGenerating}
           setIsGenerated={setIsGenerated}
+          setGenerationError={setGenerationError}
         />
         
-        {isGenerated && (
+        {isGenerated && !generationError && (
           <div className="success-message">
             <p>Site gerado com sucesso! O download deve começar automaticamente.</p>
+          </div>
+        )}
+        
+        {generationError && (
+          <div className="error-message">
+            <p>Erro: {generationError}</p>
+            <button onClick={() => setGenerationError(null)}>Fechar</button>
           </div>
         )}
       </main>

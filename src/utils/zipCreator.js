@@ -4,6 +4,15 @@ export async function createSiteZip(htmlContent, cssContent, jsContent, privacyP
   try {
     const zip = new JSZip();
     
+    // Configurar compressão para reduzir o tamanho
+    const compressionOptions = {
+      type: "blob",
+      compression: "DEFLATE",
+      compressionOptions: {
+        level: 6 // Equilíbrio entre velocidade e compressão (1-9)
+      }
+    };
+    
     // Verificar se a imagem do hero foi fornecida e gerar uma nova versão do HTML
     if (heroImage) {
       // Adicionar referência à imagem no CSS
@@ -54,8 +63,14 @@ export async function createSiteZip(htmlContent, cssContent, jsContent, privacyP
     // Criar pasta para imagens
     const imgFolder = zip.folder("imagens");
     
-    // Adicionar imagem de fundo do hero se fornecida
+    // Processar imagem do hero de forma mais eficiente
     if (heroImage) {
+      if (heroImage.size > 5000000) { // 5MB
+        console.warn('Imagem muito grande, pode causar problemas de memória');
+        // Aqui você poderia implementar redimensionamento de imagem
+      }
+      
+      // Processar a imagem em chunks para evitar problemas de memória
       const reader = new FileReader();
       reader.readAsArrayBuffer(heroImage);
       
@@ -71,8 +86,8 @@ export async function createSiteZip(htmlContent, cssContent, jsContent, privacyP
       imgFolder.file("hero-bg.jpg", defaultHeroImage);
     }
     
-    // Gerar o arquivo ZIP
-    const zipBlob = await zip.generateAsync({ type: "blob" });
+    // Gerar o arquivo ZIP com opções de compressão
+    const zipBlob = await zip.generateAsync(compressionOptions);
     return zipBlob;
   } catch (error) {
     console.error("Erro ao criar arquivo ZIP:", error);

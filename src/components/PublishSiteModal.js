@@ -1,10 +1,9 @@
 // src/components/PublishSiteModal.js - Versão atualizada com modo de teste
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Elements } from '@stripe/react-stripe-js';
 import { stripePromise, PUBLISHING_PLANS } from '../utils/stripeAPI';
 import { deploySite, registerDomain } from '../utils/netlifyAPI';
-import { simulateZohoSetup, forceZohoDemo } from '../utils/zohoAPI';
+import { simulateZohoSetup, forceZohoDemo, setupZohoWithNetlify } from '../utils/zohoAPI';
 import '../styles/publishSite.css';
 
 function PublishSiteModal({ 

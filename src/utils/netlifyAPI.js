@@ -1,15 +1,24 @@
-// src/utils/netlifyAPI.js - Versão com automatização DNS
+// src/utils/netlifyAPI.js - Versão com automatização DNS e validação de token
 
 import axios from 'axios';
 
 const NETLIFY_API_BASE_URL = 'https://api.netlify.com/api/v1';
 const NETLIFY_TOKEN = process.env.REACT_APP_NETLIFY_TOKEN;
 
+// Verificar se o token está definido
+if (!NETLIFY_TOKEN) {
+  console.error('Atenção: REACT_APP_NETLIFY_TOKEN não está definido!');
+  // Em ambiente de desenvolvimento, use um token de simulação
+  if (process.env.NODE_ENV === 'development') {
+    console.warn('Usando token de simulação para ambiente de desenvolvimento');
+  }
+}
+
 // Configuração base para as requisições Netlify
 const netlifyApi = axios.create({
   baseURL: NETLIFY_API_BASE_URL,
   headers: {
-    'Authorization': `Bearer ${NETLIFY_TOKEN}`,
+    'Authorization': `Bearer ${NETLIFY_TOKEN || 'development-token'}`,
     'Content-Type': 'application/json'
   }
 });
@@ -44,7 +53,7 @@ export async function deploySite(zipFile, siteName) {
     const deployUrl = `${NETLIFY_API_BASE_URL}/sites/${siteId}/deploys`;
     const deployResponse = await axios.post(deployUrl, formData, {
       headers: {
-        'Authorization': `Bearer ${NETLIFY_TOKEN}`,
+        'Authorization': `Bearer ${NETLIFY_TOKEN || 'development-token'}`,
         'Content-Type': 'multipart/form-data'
       }
     });

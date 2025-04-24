@@ -45,51 +45,73 @@ function DownloadButton({
       return null;
     }
     
-    setIsGenerating(true);
-    setIsGenerated(false);
-    setErrorMessage('');
+    // Adicionar um timeout mais longo para a operação
+    const TIMEOUT_DURATION = 120000; // 2 minutos
+    
+    // Criar uma promise com timeout
+    const generateWithTimeout = async () => {
+      return new Promise(async (resolve, reject) => {
+        // Configurar timeout
+        const timeoutId = setTimeout(() => {
+          reject(new Error('A operação demorou muito tempo para ser concluída. Tente novamente.'));
+        }, TIMEOUT_DURATION);
+        
+        try {
+          setIsGenerating(true);
+          setIsGenerated(false);
+          setErrorMessage('');
+          
+          // Chamar a API do OpenAI para gerar o código do site
+          const response = await generateSite(formData);
+          
+          // Extrair HTML, CSS e JS da resposta
+          const { htmlContent, cssContent, jsContent } = extractFiles(response);
+          
+          // Gerar documentos legais
+          let privacyPolicy, termsOfService;
+          
+          try {
+            privacyPolicy = generatePrivacyPolicy(formData);
+          } catch (error) {
+            console.error('Erro ao gerar política de privacidade:', error);
+            privacyPolicy = getDefaultPrivacyPolicy(formData);
+          }
+          
+          try {
+            termsOfService = generateTermsOfService(formData);
+          } catch (error) {
+            console.error('Erro ao gerar termos de uso:', error);
+            termsOfService = getDefaultTermsOfService(formData);
+          }
+          
+          // Criar arquivo ZIP
+          const zipBlobResult = await createSiteZip(
+            htmlContent, 
+            cssContent, 
+            jsContent, 
+            privacyPolicy, 
+            termsOfService, 
+            heroImage
+          );
+          
+          setZipBlob(zipBlobResult);
+          setIsGenerated(true);
+          
+          // Limpar o timeout se tudo correu bem
+          clearTimeout(timeoutId);
+          resolve(zipBlobResult);
+        } catch (error) {
+          clearTimeout(timeoutId);
+          reject(error);
+        }
+      });
+    };
     
     try {
-      // Chamar a API do OpenAI para gerar o código do site
-      const response = await generateSite(formData);
-      
-      // Extrair HTML, CSS e JS da resposta
-      const { htmlContent, cssContent, jsContent } = extractFiles(response);
-      
-      // Gerar documentos legais
-      let privacyPolicy, termsOfService;
-      
-      try {
-        privacyPolicy = generatePrivacyPolicy(formData);
-      } catch (error) {
-        console.error('Erro ao gerar política de privacidade:', error);
-        privacyPolicy = getDefaultPrivacyPolicy(formData);
-      }
-      
-      try {
-        termsOfService = generateTermsOfService(formData);
-      } catch (error) {
-        console.error('Erro ao gerar termos de uso:', error);
-        termsOfService = getDefaultTermsOfService(formData);
-      }
-      
-      // Criar arquivo ZIP
-      const zipBlobResult = await createSiteZip(
-        htmlContent, 
-        cssContent, 
-        jsContent, 
-        privacyPolicy, 
-        termsOfService, 
-        heroImage
-      );
-      
-      setZipBlob(zipBlobResult);
-      setIsGenerated(true);
-      
-      return zipBlobResult;
+      return await generateWithTimeout();
     } catch (error) {
       console.error('Erro ao gerar site:', error);
-      setErrorMessage('Ocorreu um erro ao gerar o site. Por favor, verifique a conexão com a internet e tente novamente.');
+      setErrorMessage(`Ocorreu um erro: ${error.message}`);
       return null;
     } finally {
       setIsGenerating(false);
