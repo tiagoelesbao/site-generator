@@ -1,0 +1,273 @@
+/* src/styles/dark-theme.css */
+:root {
+    --dark-bg: #0a0a16;
+    --dark-bg-secondary: #121225;
+    --accent-primary: #824ee2;
+    --accent-secondary: #30c9e8;
+    --text-primary: #ffffff;
+    --text-secondary: #c0c0d0;
+    --glow-effect: 0 0 15px rgba(130, 78, 226, 0.3);
+    --silver-accent: #e0e0e8;
+    --card-bg: rgba(26, 26, 45, 0.7);
+    --success: #4cc778;
+    --error: #ff5b6f;
+    --border-radius: 12px;
+    --transition-speed: 0.3s;
+  }
+  
+  body {
+    background: linear-gradient(135deg, var(--dark-bg) 0%, var(--dark-bg-secondary) 100%);
+    color: var(--text-primary);
+    font-family: 'Inter', 'Roboto', sans-serif;
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    background-attachment: fixed;
+    position: relative;
+  }
+  
+  /* Efeito de brilho de fundo */
+  body::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(circle at 50% 10%, rgba(130, 78, 226, 0.12), transparent 50%);
+    pointer-events: none;
+    z-index: -1;
+  }
+  
+  /* Canvas de partículas */
+  .particles-canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    pointer-events: none;
+  }
+  
+  /* Animações para elementos com fade-in */
+  .fade-in {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+  
+  .fade-in.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  
+  /* Estilização para o cabeçalho do app */
+  .app-header {
+    text-align: center;
+    padding: 2.5rem 0;
+    position: relative;
+  }
+  
+  .app-title {
+    font-size: 2.5rem;
+    background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
+    -webkit-background-clip: text;
+    background-clip: text; /* Adicionada propriedade padrão para compatibilidade */
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 0.5rem;
+  }
+  
+  .app-subtitle {
+    color: var(--text-secondary);
+    font-size: 1.2rem;
+  }
+  
+  /* Estilização para o componente Logo */
+  .site-logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 15px;
+  }
+  
+  .logo-text {
+    font-size: 1.8rem;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    color: var(--text-primary);
+  }
+  
+  .logo-accent {
+    color: var(--accent-secondary);
+  }
+  
+  /* Estilização para o conteúdo principal */
+  .app-main {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+  }
+  
+  /* Sobrescrever as mensagens de sucesso e erro */
+  .success-message, .error-message {
+    display: flex;
+    align-items: center;
+    padding: 1.2rem;
+    margin: 1.5rem 0;
+    border-radius: var(--border-radius);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  }
+  
+  .success-message {
+    background-color: rgba(76, 199, 120, 0.15);
+    border-left: 4px solid var(--success);
+    color: var(--text-primary);
+  }
+  
+  .success-message.published {
+    background-color: rgba(48, 201, 232, 0.15);
+    border-left: 4px solid var(--accent-secondary);
+  }
+  
+  .error-message {
+    background-color: rgba(255, 91, 111, 0.15);
+    border-left: 4px solid var(--error);
+    color: var(--text-primary);
+  }
+  
+  .success-icon, .error-icon {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    margin-right: 15px;
+    font-weight: bold;
+    flex-shrink: 0;
+  }
+  
+  .success-icon {
+    background-color: var(--success);
+    color: white;
+  }
+  
+  .error-icon {
+    background-color: var(--error);
+    color: white;
+  }
+  
+  .site-url-wrapper {
+    margin-left: 10px;
+  }
+  
+  .site-url {
+    color: var(--accent-secondary);
+    text-decoration: none;
+    border-bottom: 1px dashed var(--accent-secondary);
+    padding-bottom: 2px;
+    transition: border-color 0.3s;
+  }
+  
+  .site-url:hover {
+    border-bottom: 1px solid var(--accent-secondary);
+  }
+  
+  .close-error-button {
+    margin-left: auto;
+    background: none;
+    border: none;
+    color: var(--error);
+    cursor: pointer;
+    font-weight: bold;
+  }
+  
+  /* Estilização para o rodapé */
+  .app-footer {
+    text-align: center;
+    padding: 2rem 0;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    margin-top: 3rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+  }
+  
+  /* Sobrescrever a estilização para formulários e botões */
+  .form-container {
+    background: var(--card-bg);
+    border-radius: var(--border-radius);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all var(--transition-speed) ease;
+  }
+  
+  .download-button, .publish-button, button, .submit-btn {
+    background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform var(--transition-speed), box-shadow var(--transition-speed);
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .download-button:hover, .publish-button:hover, button:hover, .submit-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--glow-effect);
+    background-color: transparent; /* Override original hover */
+  }
+  
+  /* Efeito de "light trail" nos botões */
+  .download-button::after, .publish-button::after, button::after, .submit-btn::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: 0.5s;
+  }
+  
+  .download-button:hover::after, .publish-button:hover::after, button:hover::after, .submit-btn:hover::after {
+    left: 100%;
+  }
+  
+  .download-button:disabled, .publish-button:disabled, button:disabled, .submit-btn:disabled {
+    background: #3a3a4a;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+  
+  /* Campos de formulário */
+  input, textarea, select {
+    background: rgba(18, 18, 37, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--text-primary);
+    border-radius: 8px;
+    padding: 12px 16px;
+    transition: all var(--transition-speed);
+  }
+  
+  input:focus, textarea:focus, select:focus {
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 0 2px rgba(130, 78, 226, 0.3);
+    outline: none;
+  }
+  
+  /* Responsividade */
+  @media (max-width: 768px) {
+    .app-main {
+      padding: 1rem;
+    }
+    
+    .app-title {
+      font-size: 2rem;
+    }
+  }

@@ -1,8 +1,6 @@
-```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
   <rect width="32" height="32" rx="4" fill="#f5f5f5"/>
   <path d="M7 16C7 11.0294 11.0294 7 16 7C20.9706 7 25 11.0294 25 16C25 20.9706 20.9706 25 16 25" stroke="#000" stroke-width="2" stroke-linecap="round"/>
   <path d="M16 25L16 19" stroke="#000" stroke-width="2" stroke-linecap="round"/>
   <path d="M16 16L20 16" stroke="#000" stroke-width="2" stroke-linecap="round"/>
 </svg>
-```
