@@ -17,6 +17,7 @@
         "@stripe/react-stripe-js": "^1.16.5",
         "@stripe/stripe-js": "^1.54.2",
         "axios": "^0.24.0",
+        "formidable": "^3.5.4",
         "jszip": "^3.10.1",
         "netlify": "^6.1.29",
         "react": "^18.2.0",
