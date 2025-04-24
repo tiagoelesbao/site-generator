@@ -1,4 +1,4 @@
-// src/utils/netlifyAPI.js - Versão com automatização DNS e validação de token
+// src/utils/netlifyAPI.js - Versão com suporte a serverless e compatibilidade
 
 import axios from 'axios';
 
@@ -24,12 +24,52 @@ const netlifyApi = axios.create({
 });
 
 /**
- * Faz deploy de um site no Netlify
+ * Função simplificada para publicar site no Netlify via serverless function
+ * @param {Blob} zipBlob - Arquivo ZIP do site
+ * @param {Object} siteInfo - Informações do site
+ * @returns {Promise<Object>} - Informações do site publicado
+ */
+export async function publishToNetlify(zipBlob, siteInfo) {
+  try {
+    // Convertendo o Blob para FormData
+    const formData = new FormData();
+    formData.append('file', zipBlob, 'site.zip');
+    formData.append('site_name', siteInfo.name.toLowerCase().replace(/[^\w\s]/g, '').replace(/\s+/g, '-'));
+    
+    // Chamada para a função Netlify
+    const response = await axios.post('/.netlify/functions/publish-site', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    });
+    
+    return response.data;
+  } catch (error) {
+    console.error('Erro ao publicar site:', error);
+    
+    // Verificar se é um erro de autenticação
+    if (error.response && error.response.status === 401) {
+      throw new Error('Falha na autenticação com o Netlify. Verifique seu token de API.');
+    }
+    
+    throw new Error(`Falha ao publicar site: ${error.message}`);
+  }
+}
+
+/**
+ * Função legada para deploy de site diretamente na API Netlify
+ * @deprecated Use publishToNetlify em vez desta função
  * @param {Blob} zipFile - Arquivo ZIP do site
  * @param {string} siteName - Nome do site para usar na URL
  * @returns {Promise} - Resultado da operação com URL e ID do site
  */
 export async function deploySite(zipFile, siteName) {
+  // Em ambiente de desenvolvimento, simular deploy para facilitar testes
+  if (process.env.NODE_ENV === 'development' && !NETLIFY_TOKEN) {
+    console.log('Modo de desenvolvimento: utilizando função serverless para deploy');
+    return publishToNetlify(zipFile, { name: siteName });
+  }
+  
   try {
     // Normalizar o nome do site (remover espaços, caracteres especiais, etc.)
     const normalizedSiteName = siteName
@@ -211,6 +251,7 @@ export async function checkSiteStatus(siteId) {
 }
 
 export default {
+  publishToNetlify,  // Adicionando a nova função ao export padrão
   deploySite,
   registerDomain,
   configureEmailDNS,

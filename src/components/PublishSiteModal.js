@@ -1,8 +1,8 @@
-// src/components/PublishSiteModal.js - Versão atualizada com modo de teste
-import React, { useState, useEffect } from 'react';
+// src/components/PublishSiteModal.js - Versão atualizada com integração publishToNetlify
+import React, { useState } from 'react';
 import { Elements } from '@stripe/react-stripe-js';
 import { stripePromise, PUBLISHING_PLANS } from '../utils/stripeAPI';
-import { deploySite, registerDomain } from '../utils/netlifyAPI';
+import { publishToNetlify, registerDomain } from '../utils/netlifyAPI';
 import { simulateZohoSetup, forceZohoDemo, setupZohoWithNetlify } from '../utils/zohoAPI';
 import '../styles/publishSite.css';
 
@@ -112,9 +112,6 @@ function PublishSiteModal({
   };
   
   // Processar pagamento e publicar
-  // Atualização no método handlePublish do PublishSiteModal.js
-  // Substitua a função handlePublish atual por esta versão:
-
   const handlePublish = async () => {
     try {
       setIsPublishing(true);
@@ -124,10 +121,16 @@ function PublishSiteModal({
       if (selectedPlan === 'BASIC') {
         setPublishStep(3);
         
-        // Deploy do site
-        const deployResult = await deploySite(
+        // Deploy do site usando a nova função publishToNetlify
+        const deployResult = await publishToNetlify(
           zipBlob, 
-          siteData.empresa || 'meu-site'
+          { 
+            name: siteData.empresa || 'meu-site',
+            environment: {
+              SITE_NAME: siteData.empresa || 'Meu Site',
+              SITE_DOMAIN: 'free-plan'
+            }
+          }
         );
         
         setPublishResult(deployResult);
@@ -192,18 +195,25 @@ function PublishSiteModal({
         return;
       }
       
-      // Implementação real para produção
+      // Implementação real para produção usando a nova função publishToNetlify
       
       // Deploy do site
-      const deployResult = await deploySite(
+      const deployResult = await publishToNetlify(
         zipBlob, 
-        siteData.empresa || 'meu-site'
+        { 
+          name: siteData.empresa || 'meu-site',
+          environment: {
+            SITE_NAME: siteData.empresa || 'Meu Site',
+            SITE_PLAN: selectedPlan,
+            SITE_DOMAIN: customDomain || 'free-plan'
+          }
+        }
       );
       
       // Se o plano inclui registro de domínio
       if (selectedPlan === 'DOMAIN_REGISTRATION') {
         const domainResult = await registerDomain(
-          deployResult.siteId,
+          deployResult.site.id,
           customDomain
         );
         
@@ -216,7 +226,7 @@ function PublishSiteModal({
           const emailResult = await setupZohoWithNetlify(
             customDomain,
             siteData.email,
-            deployResult.siteId,
+            deployResult.site.id,
             true // Indicamos que é um domínio registrado via Netlify
           );
           
@@ -236,7 +246,7 @@ function PublishSiteModal({
             {
               type: 'CNAME',
               hostname: customDomain,
-              value: deployResult.netlifyUrl,
+              value: deployResult.site.url,
               ttl: 3600
             }
           ]
@@ -256,6 +266,12 @@ function PublishSiteModal({
           deployResult.emailSetup = emailResult;
         }
       }
+      
+      // Normalizar os campos para compatibilidade com código anterior
+      deployResult.siteId = deployResult.site?.id;
+      deployResult.deployId = deployResult.site?.deploy_id;
+      deployResult.siteUrl = deployResult.site?.url;
+      deployResult.netlifyUrl = deployResult.site?.url;
       
       setPublishResult(deployResult);
       setPublishStep(4);
@@ -353,17 +369,19 @@ function PublishSiteModal({
                   </p>
                   
                   {/* Opção de modo de teste */}
-                  <div className="testing-mode-option">
-                    <input
-                      type="checkbox"
-                      id="testing-mode"
-                      checked={testingMode}
-                      onChange={toggleTestingMode}
-                    />
-                    <label htmlFor="testing-mode" className="testing-label">
-                      Modo de teste (para desenvolvimento)
-                    </label>
-                  </div>
+                  {process.env.NODE_ENV === 'development' && (
+                    <div className="testing-mode-option">
+                      <input
+                        type="checkbox"
+                        id="testing-mode"
+                        checked={testingMode}
+                        onChange={toggleTestingMode}
+                      />
+                      <label htmlFor="testing-mode" className="testing-label">
+                        Modo de teste (para desenvolvimento)
+                      </label>
+                    </div>
+                  )}
                   {testingMode && (
                     <p className="testing-mode-note">
                       No modo de teste, o domínio não será verificado e a configuração de email será simulada para fins de desenvolvimento.
@@ -424,7 +442,7 @@ function PublishSiteModal({
                   Voltar
                 </button>
                 
-                {testingMode && selectedPlan !== 'BASIC' && (
+                {testingMode && selectedPlan !== 'BASIC' && process.env.NODE_ENV === 'development' && (
                   <button 
                     className="test-button" 
                     onClick={handleTestEmailSetup}
@@ -476,12 +494,12 @@ function PublishSiteModal({
               <div className="site-info">
                 <p><strong>URL do site:</strong></p>
                 <a 
-                  href={publishResult.netlifyUrl} 
+                  href={publishResult.netlifyUrl || publishResult.site?.url} 
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="site-url"
                 >
-                  {publishResult.netlifyUrl}
+                  {publishResult.netlifyUrl || publishResult.site?.url}
                 </a>
                 
                 {publishResult.domain && (
@@ -510,7 +528,6 @@ function PublishSiteModal({
                 )}
               </div>
               
-              {/* Seção de resultados de email do Zoho */}
               {/* Seção de resultados de email do Zoho */}
               {publishResult.emailSetup && (
                 <div className="email-setup-results">
@@ -626,7 +643,7 @@ function PublishSiteModal({
                 <button className="secondary-button" onClick={handleClose}>Fechar</button>
                 {!testingMode && (
                   <a 
-                    href={publishResult.netlifyUrl}
+                    href={publishResult.netlifyUrl || publishResult.site?.url}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="primary-button visit-button"

@@ -1,9 +1,65 @@
 import { siteTemplates } from '../templates/siteTemplates';
 
-export async function generateSite(formData) {
-  // Construção do prompt para OpenAI
-  const randomTemplateIndex = Math.floor(Math.random() * siteTemplates.length);
-  const selectedTemplate = siteTemplates[randomTemplateIndex];
+export async function generateSite(formData, templateId = null) {
+  // Selecionar template específico ou escolher aleatoriamente
+  let selectedTemplate;
+  
+  if (templateId && siteTemplates.find(t => t.id === templateId)) {
+    selectedTemplate = siteTemplates.find(t => t.id === templateId);
+  } else {
+    const randomTemplateIndex = Math.floor(Math.random() * siteTemplates.length);
+    selectedTemplate = siteTemplates[randomTemplateIndex];
+  }
+  
+  // Funções auxiliares para gerar blocos específicos
+  const generateFooter = () => {
+    const currentYear = new Date().getFullYear();
+    return `
+    <footer class="site-footer">
+      <div class="container">
+        <div class="footer-content">
+          <div class="footer-company">
+            <p class="footer-company-name">${formData.empresa || 'Empresa'}</p>
+            <p class="footer-company-details">${formData.razaoSocial || 'Razão Social'} - CNPJ: ${formData.cnpj || '00.000.000/0001-00'}</p>
+            <p class="footer-address">${formData.endereco || 'Endereço da Empresa'}</p>
+            <p class="footer-contact">Email: ${formData.email || 'contato@empresa.com'} | Tel: ${formData.telefone || '(00) 0000-0000'}</p>
+            <p class="footer-copyright">© ${currentYear} ${formData.empresa || 'Empresa'}. Todos os direitos reservados.</p>
+          </div>
+          
+          <div class="footer-links">
+            <a href="politica-privacidade.html" class="policy-link">Política de Privacidade</a>
+            <a href="termos-uso.html" class="policy-link">Termo de uso</a>
+          </div>
+        </div>
+      </div>
+    </footer>`;
+  };
+  
+  const generateQuemSomos = () => {
+    return `
+    <section id="quem-somos" class="quem-somos-section">
+      <div class="container">
+        <h2>Quem Somos</h2>
+        <div class="quem-somos-content">
+          <p class="company-info">${formData.quemSomos || 'Texto institucional sobre a empresa.'}</p>
+        </div>
+      </div>
+    </section>`;
+  };
+
+  // Variáveis de estilo com base no template selecionado
+  const styleVars = {
+    primaryColor: selectedTemplate.colors[0] || '#333333',
+    backgroundColor: selectedTemplate.colors[1] || '#ffffff',
+    lightGray: selectedTemplate.colors[2] || '#f5f5f5',
+    accentColor: selectedTemplate.colors[3] || '#4CAF50',
+    secondaryColor: selectedTemplate.colors[4] || selectedTemplate.colors[3] || '#1976D2',
+    headingFont: selectedTemplate.fonts.heading || "'Montserrat', sans-serif",
+    bodyFont: selectedTemplate.fonts.body || "'Inter', sans-serif",
+    animations: (selectedTemplate.animations || ['fade', 'slide']).join(', '),
+    layout: selectedTemplate.layout || 'wide',
+    heroStyle: selectedTemplate.heroStyle || 'centered'
+  };
 
   // Construção do prompt para OpenAI, incluindo detalhes do template selecionado
   const prompt = `
@@ -32,40 +88,41 @@ export async function generateSite(formData) {
     ${formData.quemSomos || 'Texto institucional sobre a empresa.'}
     
     ESTILO VISUAL:
-    - Design minimalista e profissional
+    - Design: ${selectedTemplate.name || 'Moderno e Minimalista'}
     - Espaçamento amplo entre elementos
-    - Tipografia moderna (use a fonte Inter do Google Fonts)
-    - Esquema de cores clean e corporativo (preto, branco, cinza)
-    - Cores de destaque sutis (azul como cor de destaque)
+    - Tipografia: ${styleVars.headingFont} para títulos, ${styleVars.bodyFont} para o corpo do texto
+    - Esquema de cores: 
+      * Cor primária (textos e elementos principais): ${styleVars.primaryColor}
+      * Cor de fundo: ${styleVars.backgroundColor}
+      * Cor cinza claro (para cards e seções): ${styleVars.lightGray}
+      * Cor de destaque principal: ${styleVars.accentColor}
+      * Cor de destaque secundária: ${styleVars.secondaryColor}
+    - Layout: ${styleVars.layout === 'wide' ? 'layout amplo e moderno' : 'layout mais compacto e boxed'}
+    - Estilo hero: ${styleVars.heroStyle}
     - Cards para serviços com fundo cinza claro
     - Lista de serviços com checkmarks
-    - Informações de contato e CNPJ visíveis no rodapé
     - Layout de duas colunas na seção de contato (formulário e informações)
     - Navegação fixa no topo
     - Seção hero preparada para receber uma imagem de fundo
-
-    BASE PARA ESTILO VISUAL:
-    - Esquema de cores: ${selectedTemplate.colors.join(', ')}
-    - Fontes: ${selectedTemplate.fonts.heading} para títulos, ${selectedTemplate.fonts.body} para o corpo do texto
-    - Animações: ${selectedTemplate.animations.join(', ')}
-    - Layout: ${selectedTemplate.layout}
-    - Estilo dos cards: ${selectedTemplate.cardStyle}
-    - Estilo da seção hero: ${selectedTemplate.heroStyle}
+    - Animações suaves: ${styleVars.animations}
+    - Footer completo com todas as informações de contato e copyright
 
     REQUISITOS:
     - Gere o código HTML completo para a página inicial dentro de um bloco de código com a sintaxe \`\`\`html
     - Gere o código CSS completo dentro de um bloco de código com a sintaxe \`\`\`css
     - Gere o código JavaScript completo dentro de um bloco de código com a sintaxe \`\`\`javascript
-    - Inclua a fonte Inter do Google Fonts
+    - Inclua fontes do Google Fonts
     - Garanta responsividade para todos dispositivos
     - Formulário de contato funcional
     - Navegação suave para links internos
     - Prepare o CSS para receber uma imagem de fundo na seção hero
     - NÃO inclua nenhum favicon ou link para favicon externo no HTML
-    - Informações de rodapé seguindo o modelo exato abaixo:
-      * Nome da empresa + Ltda.
+    - O footer DEVE incluir:
+      * Nome da empresa + razão social
       * CNPJ completo
       * Endereço completo
+      * Email e telefone de contato
+      * Copyright com ano atual
       * Links para política de privacidade e termos de uso
     - O código precisa estar bem comentado e organizado
   `;
@@ -89,7 +146,7 @@ export async function generateSite(formData) {
         messages: [
           {
             role: "system",
-            content: "Você é um desenvolvedor web especializado em criar sites modernos, minimalistas e responsivos para marketing digital, seguindo as tendências mais recentes de design. Seu foco é em um design clean, corporativo e profissional. NÃO inclua favicons ou referências a favicons ou outros ícones externos no código HTML."
+            content: "Você é um desenvolvedor web especializado em criar sites modernos, minimalistas e responsivos para marketing digital, seguindo as tendências mais recentes de design. Seu foco é em um design clean, corporativo e profissional. NÃO inclua favicons ou referências a favicons ou outros ícones externos no código HTML. Certifique-se de incluir um rodapé completo com todas as informações de contato e direitos autorais. Lembre-se de manter as informações sensíveis da empresa discretas e evite expor desnecessariamente dados como CNPJ na seção principal 'Quem Somos'."
           },
           {
             role: "user",
@@ -112,7 +169,9 @@ export async function generateSite(formData) {
   } catch (error) {
     console.error("Erro ao gerar site:", error);
     
-    // Retornar uma resposta fallback baseada no modelo de design minimalista
+    // Retornar uma resposta fallback com template melhorado
+    const currentYear = new Date().getFullYear();
+    
     return {
       choices: [
         {
@@ -129,9 +188,10 @@ export async function generateSite(formData) {
   <link rel="stylesheet" href="style.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=${styleVars.headingFont.replace(/'/g, '').replace(/,.+/g, '')}&family=${styleVars.bodyFont.replace(/'/g, '').replace(/,.+/g, '')}&display=swap" rel="stylesheet">
 </head>
 <body>
+  <!-- Cabeçalho com navegação -->
   <header class="site-header">
     <div class="container header-container">
       <div class="logo">
@@ -148,6 +208,7 @@ export async function generateSite(formData) {
     </div>
   </header>
 
+  <!-- Seção Hero principal -->
   <section id="hero" class="hero-section">
     <div class="container">
       <div class="hero-content">
@@ -157,8 +218,10 @@ export async function generateSite(formData) {
     </div>
   </section>
 
+  <!-- Cards de serviços -->
   <section id="servicos-cards" class="servicos-cards">
     <div class="container">
+      <h2>Nossos Serviços</h2>
       <div class="cards-grid">
         <div class="service-card">
           <h3>${formData.servico1Nome || 'Serviço 1'}</h3>
@@ -176,18 +239,20 @@ export async function generateSite(formData) {
     </div>
   </section>
 
+  <!-- Quem Somos - Versão discreto sem informações sensíveis -->
   <section id="quem-somos" class="quem-somos-section">
     <div class="container">
       <h2>Quem Somos</h2>
-      <p class="company-info">${formData.quemSomos || 'Texto institucional sobre a empresa.'}</p>
-      <p class="company-details">${formData.razaoSocial || 'Razão Social'}<br>
-      CNPJ ${formData.cnpj || '00.000.000/0001-00'}</p>
+      <div class="quem-somos-content">
+        <p class="company-info">${formData.quemSomos || 'Texto institucional sobre a empresa.'}</p>
+      </div>
     </div>
   </section>
 
+  <!-- Lista de serviços com checkmarks -->
   <section id="servicos" class="servicos-section">
     <div class="container">
-      <h2>Serviços</h2>
+      <h2>Nossos Diferenciais</h2>
       <p class="services-intro">Oferecemos soluções completas em:</p>
       
       <ul class="services-list">
@@ -198,6 +263,7 @@ export async function generateSite(formData) {
     </div>
   </section>
 
+  <!-- Seção de contato com duas colunas -->
   <section id="contato" class="contato-section">
     <div class="container contato-container">
       <div class="contato-info">
@@ -242,13 +308,16 @@ export async function generateSite(formData) {
     </div>
   </section>
 
+  <!-- Rodapé completo com todas as informações -->
   <footer class="site-footer">
     <div class="container">
       <div class="footer-content">
         <div class="footer-company">
-          <p class="footer-company-name">${formData.empresa || 'Empresa'}: ${formData.razaoSocial || 'Razão Social'}</p>
-          <p class="footer-company-details">CNPJ ${formData.cnpj || '00.000.000/0001-00'}</p>
+          <p class="footer-company-name">${formData.empresa || 'Empresa'}</p>
+          <p class="footer-company-details">${formData.razaoSocial || 'Razão Social'} - CNPJ: ${formData.cnpj || '00.000.000/0001-00'}</p>
           <p class="footer-address">${formData.endereco || 'Endereço da Empresa'}</p>
+          <p class="footer-contact">Email: ${formData.email || 'contato@empresa.com'} | Tel: ${formData.telefone || '(00) 0000-0000'}</p>
+          <p class="footer-copyright">© ${currentYear} ${formData.empresa || 'Empresa'}. Todos os direitos reservados.</p>
         </div>
         
         <div class="footer-links">
@@ -267,14 +336,17 @@ export async function generateSite(formData) {
 \`\`\`css
 /* Base reset e estilos gerais */
 :root {
-  --primary-color: #000;
-  --text-color: #333;
-  --light-gray: #f5f5f5;
+  --primary-color: ${styleVars.primaryColor};
+  --text-color: ${styleVars.primaryColor};
+  --background-color: ${styleVars.backgroundColor};
+  --light-gray: ${styleVars.lightGray};
   --medium-gray: #e0e0e0;
-  --accent-color: #0066ff;
-  --white: #fff;
-  --container-width: 1140px;
+  --accent-color: ${styleVars.accentColor};
+  --secondary-color: ${styleVars.secondaryColor};
+  --container-width: ${styleVars.layout === 'wide' ? '1200px' : '1000px'};
   --transition: all 0.3s ease;
+  --box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+  --border-radius: 8px;
 }
 
 * {
@@ -284,10 +356,10 @@ export async function generateSite(formData) {
 }
 
 body {
-  font-family: 'Inter', sans-serif;
+  font-family: ${styleVars.bodyFont};
   line-height: 1.6;
   color: var(--text-color);
-  background-color: var(--white);
+  background-color: var(--background-color);
   padding: 0;
   overflow-x: hidden;
 }
@@ -309,9 +381,11 @@ ul {
 }
 
 h1, h2, h3, h4, h5, h6 {
+  font-family: ${styleVars.headingFont};
   font-weight: 600;
   line-height: 1.3;
   margin-bottom: 1rem;
+  color: var(--primary-color);
 }
 
 h1 {
@@ -322,6 +396,18 @@ h1 {
 h2 {
   font-size: 2rem;
   margin-bottom: 1.5rem;
+  position: relative;
+  display: inline-block;
+}
+
+h2::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -10px;
+  width: 50px;
+  height: 3px;
+  background-color: var(--accent-color);
 }
 
 h3 {
@@ -339,7 +425,7 @@ section {
 
 /* Header */
 .site-header {
-  background-color: var(--white);
+  background-color: var(--background-color);
   padding: 1.5rem 0;
   position: sticky;
   top: 0;
@@ -401,20 +487,27 @@ section {
 /* Hero Section */
 .hero-section {
   padding: 7rem 0 6rem;
-  background-color: var(--white);
+  background-color: var(--light-gray);
   position: relative;
   /* Preparado para receber uma imagem de fundo */
-  background-color: var(--light-gray);
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
 }
 
 .hero-content {
   max-width: 650px;
   position: relative;
   z-index: 2;
+  background-color: rgba(255, 255, 255, 0.9);
+  padding: 2.5rem;
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
 }
 
 .hero-content h1 {
   margin-bottom: 1.5rem;
+  color: var(--primary-color);
 }
 
 .subtitle {
@@ -425,45 +518,60 @@ section {
 /* Serviços Cards */
 .servicos-cards {
   padding: 5rem 0;
-  background-color: var(--white);
+  background-color: var(--background-color);
+  text-align: center;
+}
+
+.servicos-cards h2 {
+  margin-bottom: 2rem;
+  display: inline-block;
 }
 
 .cards-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 2rem;
+  margin-top: 3rem;
 }
 
 .service-card {
   background-color: var(--light-gray);
   padding: 2rem;
-  border-radius: 4px;
+  border-radius: var(--border-radius);
   height: 100%;
   transition: var(--transition);
+  text-align: left;
+  box-shadow: var(--box-shadow);
+  border-top: 3px solid var(--accent-color);
 }
 
 .service-card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+}
+
+.service-card h3 {
+  color: var(--primary-color);
+  position: relative;
+  margin-bottom: 1.25rem;
+}
+
+.service-card p {
+  color: var(--text-color);
 }
 
 /* Quem Somos */
 .quem-somos-section {
   padding: 6rem 0;
-  background-color: var(--white);
+  background-color: var(--background-color);
 }
 
 .quem-somos-section h2 {
   margin-bottom: 2rem;
 }
 
-.company-info, 
-.company-details {
-  max-width: 650px;
-}
-
-.company-details {
-  margin-top: 1rem;
+.quem-somos-content {
+  max-width: 800px;
 }
 
 /* Serviços Section */
@@ -478,12 +586,14 @@ section {
 
 .services-intro {
   margin-bottom: 2.5rem;
+  max-width: 600px;
 }
 
 .services-list {
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
+  max-width: 600px;
 }
 
 .services-list li {
@@ -491,19 +601,29 @@ section {
   align-items: center;
   font-size: 1.1rem;
   font-weight: 500;
+  background-color: var(--background-color);
+  padding: 1rem 1.5rem;
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
 }
 
 .checkmark {
   display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  width: 25px;
+  height: 25px;
   margin-right: 0.75rem;
-  color: var(--accent-color);
+  color: white;
+  background-color: var(--accent-color);
+  border-radius: 50%;
   font-weight: bold;
 }
 
 /* Contato Section */
 .contato-section {
   padding: 6rem 0;
-  background-color: var(--white);
+  background-color: var(--background-color);
 }
 
 .contato-container {
@@ -519,18 +639,27 @@ section {
 
 .info-block {
   margin-bottom: 2rem;
+  padding: 1.5rem;
+  background-color: var(--light-gray);
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
 }
 
 .info-block h4 {
   font-size: 1rem;
   font-weight: 600;
   margin-bottom: 0.5rem;
+  color: var(--accent-color);
 }
 
 .contato-form form {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+  padding: 2rem;
+  background-color: var(--light-gray);
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
 }
 
 .form-group {
@@ -552,6 +681,14 @@ section {
   border-radius: 4px;
   font-family: inherit;
   font-size: 1rem;
+  transition: var(--transition);
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 2px rgba(var(--accent-color-rgb), 0.2);
 }
 
 .form-group textarea {
@@ -562,7 +699,7 @@ section {
 .submit-btn {
   display: inline-block;
   background-color: var(--accent-color);
-  color: var(--white);
+  color: white;
   border: none;
   padding: 0.75rem 1.5rem;
   border-radius: 4px;
@@ -575,43 +712,61 @@ section {
 }
 
 .submit-btn:hover {
-  background-color: #0055cc;
+  background-color: var(--secondary-color);
 }
 
 /* Footer */
 .site-footer {
-  background-color: var(--white);
+  background-color: var(--primary-color);
+  color: white;
   padding: 4rem 0;
-  border-top: 1px solid var(--medium-gray);
 }
 
 .footer-content {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 2rem;
+}
+
+.footer-company {
+  flex-basis: 60%;
 }
 
 .footer-company-name {
   font-weight: 600;
   margin-bottom: 0.5rem;
+  font-size: 1.2rem;
 }
 
-.footer-company-details {
-  margin-bottom: 1rem;
+.footer-company-details,
+.footer-address,
+.footer-contact {
+  margin-bottom: 0.75rem;
+  font-size: 0.95rem;
+  opacity: 0.9;
+}
+
+.footer-copyright {
+  margin-top: 1.5rem;
+  font-size: 0.9rem;
+  opacity: 0.7;
 }
 
 .footer-links {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 1rem;
 }
 
 .policy-link {
-  color: var(--text-color);
+  color: white;
   text-decoration: none;
   transition: var(--transition);
   display: inline-flex;
   align-items: center;
+  opacity: 0.9;
 }
 
 .policy-link::after {
@@ -621,13 +776,24 @@ section {
 }
 
 .policy-link:hover {
-  color: var(--accent-color);
+  opacity: 1;
+  transform: translateX(5px);
+}
+
+/* Animações */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.service-card, .info-block, .quem-somos-content {
+  animation: fadeIn 0.8s ease forwards;
 }
 
 /* Responsividade */
 @media (max-width: 1024px) {
   :root {
-    --container-width: 960px;
+    --container-width: 95%;
   }
   
   h1 {
@@ -640,10 +806,6 @@ section {
 }
 
 @media (max-width: 768px) {
-  :root {
-    --container-width: 720px;
-  }
-  
   section {
     padding: 4rem 0;
   }
@@ -676,6 +838,10 @@ section {
     gap: 2rem;
   }
   
+  .footer-company {
+    flex-basis: 100%;
+  }
+  
   .footer-links {
     flex-direction: row;
     gap: 2rem;
@@ -683,12 +849,8 @@ section {
 }
 
 @media (max-width: 576px) {
-  :root {
-    --container-width: 100%;
-  }
-  
   h1 {
-    font-size: 2rem;
+    font-size: 1.75rem;
   }
   
   h2 {
@@ -697,6 +859,10 @@ section {
   
   .hero-section {
     padding: 5rem 0 4rem;
+  }
+  
+  .hero-content {
+    padding: 1.5rem;
   }
   
   .main-nav ul {
@@ -708,6 +874,14 @@ section {
   .footer-links {
     flex-direction: column;
     gap: 1rem;
+  }
+  
+  .service-card {
+    padding: 1.5rem;
+  }
+  
+  .info-block {
+    padding: 1rem;
   }
 }
 \`\`\`
@@ -759,8 +933,33 @@ document.addEventListener('DOMContentLoaded', function() {
         mensagem: document.getElementById('mensagem').value
       };
       
-      // Aqui você adicionaria o código para enviar os dados para seu backend
-      // Por enquanto, apenas simulamos o envio com um feedback visual
+      // Validar formulário
+      let isValid = true;
+      const errorMessages = [];
+      
+      if (!formData.nome.trim()) {
+        isValid = false;
+        errorMessages.push('Nome é obrigatório');
+      }
+      
+      if (!formData.email.trim()) {
+        isValid = false;
+        errorMessages.push('Email é obrigatório');
+      } else if (!isValidEmail(formData.email)) {
+        isValid = false;
+        errorMessages.push('Digite um email válido');
+      }
+      
+      if (!formData.mensagem.trim()) {
+        isValid = false;
+        errorMessages.push('Mensagem é obrigatória');
+      }
+      
+      // Se houver erros, mostrar mensagens
+      if (!isValid) {
+        alert('Por favor, corrija os seguintes erros:\\n' + errorMessages.join('\\n'));
+        return;
+      }
       
       // Desabilitar o botão durante o "envio"
       const submitButton = contactForm.querySelector('button[type="submit"]');
@@ -778,9 +977,29 @@ document.addEventListener('DOMContentLoaded', function() {
         submitButton.textContent = originalText;
         
         // Mostrar mensagem de sucesso
-        alert('Mensagem enviada com sucesso! Entraremos em contato em breve.');
+        const successMessage = document.createElement('div');
+        successMessage.className = 'success-message';
+        successMessage.textContent = 'Mensagem enviada com sucesso! Entraremos em contato em breve.';
+        successMessage.style.backgroundColor = '#e8f5e9';
+        successMessage.style.color = '#2e7d32';
+        successMessage.style.padding = '1rem';
+        successMessage.style.borderRadius = '4px';
+        successMessage.style.marginTop = '1rem';
+        
+        contactForm.appendChild(successMessage);
+        
+        // Remover mensagem após 5 segundos
+        setTimeout(() => {
+          successMessage.remove();
+        }, 5000);
       }, 1500);
     });
+  }
+  
+  // Função para validar email
+  function isValidEmail(email) {
+    const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
+    return emailRegex.test(email);
   }
   
   // Detectar seção ativa durante o scroll
@@ -816,9 +1035,9 @@ document.addEventListener('DOMContentLoaded', function() {
   setActiveNavItem();
   window.addEventListener('scroll', setActiveNavItem);
   
-  // Animação sutil para elementos entrando na viewport
+  // Animação para elementos entrando na viewport
   function animateOnScroll() {
-    const elements = document.querySelectorAll('.service-card, .company-info, .services-list, .contato-info, .contato-form');
+    const elements = document.querySelectorAll('.service-card, .quem-somos-content, .services-list li, .info-block, .contato-form');
     
     elements.forEach(element => {
       const elementPosition = element.getBoundingClientRect().top;
@@ -832,12 +1051,14 @@ document.addEventListener('DOMContentLoaded', function() {
   }
   
   // Adicionar estilo inicial para os elementos que serão animados
-  const animatedElements = document.querySelectorAll('.service-card, .company-info, .services-list, .contato-info, .contato-form');
+  const animatedElements = document.querySelectorAll('.service-card, .quem-somos-content, .services-list li, .info-block, .contato-form');
   
-  animatedElements.forEach(element => {
+  animatedElements.forEach((element, index) => {
     element.style.opacity = '0';
     element.style.transform = 'translateY(20px)';
     element.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+    // Adicionar delay escalonado para animação em cascata
+    element.style.transitionDelay = (index * 0.1) + 's';
   });
   
   // Executar ao carregar e durante o scroll
