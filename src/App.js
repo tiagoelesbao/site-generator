@@ -1,10 +1,9 @@
-// src/App.js - Versão atualizada com animações e tema escuro
+// src/App.js - Versão refinada com nova identidade visual premium
 import React, { useState, useEffect } from 'react';
 import Form from './components/Form';
 import DownloadButton from './components/DownloadButton';
-import Logo from './components/Logo'; // Novo componente Logo
-import './styles/main.css';
-import './styles/dark-theme.css'; // Importar tema escuro
+import Logo from './components/Logo';
+import './styles/premium-theme.css';
 
 function App() {
   const [formData, setFormData] = useState({
@@ -33,20 +32,15 @@ function App() {
   const [generationError, setGenerationError] = useState(null);
   const [publishResult, setPublishResult] = useState(null);
   
-  // Inicializar animações e verificar token Netlify quando o componente for montado
+  // Inicializar animações e verificar token Netlify
   useEffect(() => {
-    // Inicializar as animações
     initAnimations();
     
-    // Verificar se há um token do Netlify no localStorage
     const storedToken = localStorage.getItem('netlify_token');
     if (!storedToken && process.env.NODE_ENV === 'development') {
-      // Se não houver token e estiver em ambiente de desenvolvimento,
-      // podemos avisá-lo mais tarde no processo de publicação
       console.info('Nenhum token Netlify encontrado para desenvolvimento');
     }
     
-    // Limpar o estado de erro quando o usuário interage com o formulário
     if (generationError) {
       setGenerationError(null);
     }
@@ -54,15 +48,13 @@ function App() {
   
   // Função para inicializar animações
   const initAnimations = () => {
-    // Detectar elementos com a classe 'fade-in' e aplicar animações
+    // Detectar elementos com a classe 'fade-in'
     const fadeElements = document.querySelectorAll('.fade-in');
     
-    // Inicializar observador de interseção
     const observer = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
         if (entry.isIntersecting) {
           entry.target.classList.add('visible');
-          // Adicionar delay escalonado para animação em cascata
           if (entry.target.dataset.delay) {
             entry.target.style.transitionDelay = `${parseInt(entry.target.dataset.delay) * 0.1}s`;
           }
@@ -70,24 +62,20 @@ function App() {
       });
     }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
     
-    // Aplicar a todos os elementos com classe 'fade-in'
     fadeElements.forEach((el, index) => {
       el.dataset.delay = index;
       observer.observe(el);
     });
     
-    // Adicionar classes para animação de partículas no fundo
-    const particlesCanvas = document.createElement('canvas');
-    particlesCanvas.classList.add('particles-canvas');
-    document.body.appendChild(particlesCanvas);
-    
-    // Inicializar efeito de partículas (em produção, você pode implementar isso em um arquivo separado)
-    initParticlesEffect(particlesCanvas);
+    // Adicionar canvas para efeito de partículas premium
+    initPremiumParticles();
   };
   
-  // Função para inicializar o efeito de partículas (simplificado)
-  const initParticlesEffect = (canvas) => {
-    if (!canvas) return;
+  // Efeito de partículas premium para o fundo
+  const initPremiumParticles = () => {
+    const canvas = document.createElement('canvas');
+    canvas.classList.add('particles-canvas');
+    document.body.appendChild(canvas);
     
     const ctx = canvas.getContext('2d');
     let width = window.innerWidth;
@@ -96,10 +84,66 @@ function App() {
     canvas.width = width;
     canvas.height = height;
     
-    // Configuração básica para partículas
-    // Em produção, você implementaria um efeito completo
-    ctx.fillStyle = 'rgba(130, 78, 226, 0.05)';
-    ctx.fillRect(0, 0, width, height);
+    // Configuração de partículas com efeito metálico/prateado
+    const particles = [];
+    const particleCount = 60;
+    
+    for (let i = 0; i < particleCount; i++) {
+      particles.push({
+        x: Math.random() * width,
+        y: Math.random() * height,
+        radius: Math.random() * 2 + 0.5,
+        color: `rgba(${Math.floor(Math.random() * 30 + 225)}, ${Math.floor(Math.random() * 30 + 225)}, ${Math.floor(Math.random() * 30 + 225)}, ${Math.random() * 0.4 + 0.1})`,
+        speedX: Math.random() * 0.8 - 0.4,
+        speedY: Math.random() * 0.8 - 0.4
+      });
+    }
+    
+    function drawParticles() {
+      ctx.clearRect(0, 0, width, height);
+      
+      particles.forEach(particle => {
+        ctx.beginPath();
+        ctx.arc(particle.x, particle.y, particle.radius, 0, Math.PI * 2);
+        ctx.fillStyle = particle.color;
+        ctx.fill();
+        
+        // Atualizar posição
+        particle.x += particle.speedX;
+        particle.y += particle.speedY;
+        
+        // Verificar bordas
+        if (particle.x < 0 || particle.x > width) particle.speedX *= -1;
+        if (particle.y < 0 || particle.y > height) particle.speedY *= -1;
+      });
+      
+      // Conectar partículas próximas com linhas sutis
+      connectParticles();
+      
+      requestAnimationFrame(drawParticles);
+    }
+    
+    function connectParticles() {
+      const maxDistance = 130;
+      
+      for (let i = 0; i < particles.length; i++) {
+        for (let j = i + 1; j < particles.length; j++) {
+          const dx = particles[i].x - particles[j].x;
+          const dy = particles[i].y - particles[j].y;
+          const distance = Math.sqrt(dx * dx + dy * dy);
+          
+          if (distance < maxDistance) {
+            const opacity = 1 - (distance / maxDistance);
+            ctx.beginPath();
+            ctx.strokeStyle = `rgba(220, 220, 225, ${opacity * 0.15})`;
+            ctx.lineWidth = 0.5;
+            ctx.moveTo(particles[i].x, particles[i].y);
+            ctx.lineTo(particles[j].x, particles[j].y);
+            ctx.stroke();
+          }
+        }
+      }
+    }
     
     // Ajustar tamanho do canvas ao redimensionar a janela
     window.addEventListener('resize', () => {
@@ -108,6 +152,8 @@ function App() {
       canvas.width = width;
       canvas.height = height;
     });
+    
+    drawParticles();
   };
   
   const handleInputChange = (e) => {
@@ -135,6 +181,7 @@ function App() {
   
   return (
     <div className="app-container">
+      <div className="glowing-overlay"></div>
       <header className="app-header fade-in">
         <Logo />
         <h1 className="app-title fade-in">Gerador de Sites</h1>
@@ -201,7 +248,10 @@ function App() {
       </main>
       
       <footer className="app-footer fade-in" data-delay="5">
-        <p>&copy; {new Date().getFullYear()} SiteGenAI - Gerador de Sites</p>
+        <div className="footer-content">
+          <p>&copy; {new Date().getFullYear()} SiteGenAI - Gerador de Sites</p>
+          <div className="diamond-separator"></div>
+        </div>
       </footer>
     </div>
   );

@@ -1,23 +1,65 @@
+// src/components/Form.js - Versão aprimorada com UI premium
 import React, { useState } from 'react';
 import FormField from './FormField';
-import '../styles/form.css';
 
 function Form({ formData, onInputChange, onImageUpload, disabled = false }) {
   const [activeSection, setActiveSection] = useState('empresa');
   
   // Definir as seções do formulário
   const sections = [
-    { id: 'empresa', label: 'Dados da Empresa' },
-    { id: 'hero', label: 'Seção Hero' },
-    { id: 'servicos', label: 'Serviços' },
-    { id: 'quemSomos', label: 'Quem Somos' }
+    { id: 'empresa', label: 'Dados da Empresa', icon: 'building' },
+    { id: 'hero', label: 'Seção Hero', icon: 'image' },
+    { id: 'servicos', label: 'Serviços', icon: 'package' },
+    { id: 'quemSomos', label: 'Quem Somos', icon: 'info' }
   ];
+  
+  // Renderizar ícone de seção
+  const renderSectionIcon = (icon) => {
+    switch(icon) {
+      case 'building':
+        return (
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="section-icon">
+            <path d="M19 22H5C4.44772 22 4 21.5523 4 21V3C4 2.44772 4.44772 2 5 2H15L20 7V21C20 21.5523 19.5523 22 19 22Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M14 2V8H20" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M8 13H12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M8 17H16" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        );
+      case 'image':
+        return (
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="section-icon">
+            <rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            <circle cx="9" cy="9" r="2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M21 15L16 10L5 21" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        );
+      case 'package':
+        return (
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="section-icon">
+            <path d="M12 21L2 16V8L12 3L22 8V16L12 21Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M12 21V12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M22 8L12 12L2 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M17 5.5L7 10.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        );
+      case 'info':
+        return (
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="section-icon">
+            <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M12 17V11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            <circle cx="12" cy="8" r="1" fill="currentColor"/>
+          </svg>
+        );
+      default:
+        return null;
+    }
+  };
   
   return (
     <div className="form-container">
       <h2>Preencha os dados do seu site</h2>
       
-      {/* Navegação por tabs */}
+      {/* Navegação por tabs com ícones */}
       <div className="form-tabs">
         {sections.map(section => (
           <button
@@ -26,7 +68,8 @@ function Form({ formData, onInputChange, onImageUpload, disabled = false }) {
             onClick={() => setActiveSection(section.id)}
             disabled={disabled}
           >
-            {section.label}
+            {renderSectionIcon(section.icon)}
+            <span>{section.label}</span>
           </button>
         ))}
       </div>
@@ -34,30 +77,47 @@ function Form({ formData, onInputChange, onImageUpload, disabled = false }) {
       {/* Seção: Dados da Empresa */}
       {activeSection === 'empresa' && (
         <div className="form-section">
-          <FormField
-            label="Nome da Empresa *"
-            name="empresa"
-            value={formData.empresa}
-            onChange={onInputChange}
-            disabled={disabled}
-            required
-          />
+          <div className="section-header">
+            <h3>Dados da Empresa</h3>
+            <div className="section-line"></div>
+          </div>
           
-          <FormField
-            label="Razão Social"
-            name="razaoSocial"
-            value={formData.razaoSocial}
-            onChange={onInputChange}
-            disabled={disabled}
-          />
+          <div className="form-grid">
+            <FormField
+              label="Nome da Empresa *"
+              name="empresa"
+              value={formData.empresa}
+              onChange={onInputChange}
+              disabled={disabled}
+              required
+            />
+            
+            <FormField
+              label="Razão Social"
+              name="razaoSocial"
+              value={formData.razaoSocial}
+              onChange={onInputChange}
+              disabled={disabled}
+            />
+          </div>
           
-          <FormField
-            label="CNPJ"
-            name="cnpj"
-            value={formData.cnpj}
-            onChange={onInputChange}
-            disabled={disabled}
-          />
+          <div className="form-grid">
+            <FormField
+              label="CNPJ"
+              name="cnpj"
+              value={formData.cnpj}
+              onChange={onInputChange}
+              disabled={disabled}
+            />
+            
+            <FormField
+              label="Telefone"
+              name="telefone"
+              value={formData.telefone}
+              onChange={onInputChange}
+              disabled={disabled}
+            />
+          </div>
           
           <FormField
             label="Endereço"
@@ -68,32 +128,26 @@ function Form({ formData, onInputChange, onImageUpload, disabled = false }) {
             disabled={disabled}
           />
           
-          <FormField
-            label="E-mail de Contato *"
-            name="email"
-            value={formData.email}
-            onChange={onInputChange}
-            type="email"
-            disabled={disabled}
-            required
-          />
-          
-          <FormField
-            label="E-mail para LGPD"
-            name="emailLGPD"
-            value={formData.emailLGPD}
-            onChange={onInputChange}
-            type="email"
-            disabled={disabled}
-          />
-          
-          <FormField
-            label="Telefone"
-            name="telefone"
-            value={formData.telefone}
-            onChange={onInputChange}
-            disabled={disabled}
-          />
+          <div className="form-grid">
+            <FormField
+              label="E-mail de Contato *"
+              name="email"
+              value={formData.email}
+              onChange={onInputChange}
+              type="email"
+              disabled={disabled}
+              required
+            />
+            
+            <FormField
+              label="E-mail para LGPD"
+              name="emailLGPD"
+              value={formData.emailLGPD}
+              onChange={onInputChange}
+              type="email"
+              disabled={disabled}
+            />
+          </div>
           
           <FormField
             label="Domínio (ex: meusite.com.br)"
@@ -105,11 +159,11 @@ function Form({ formData, onInputChange, onImageUpload, disabled = false }) {
           
           <div className="section-navigation">
             <button 
-              className="nav-button next" 
+              className="next-button" 
               onClick={() => setActiveSection('hero')}
               disabled={disabled}
             >
-              Próximo: Seção Hero →
+              Próximo <span className="button-icon">→</span>
             </button>
           </div>
         </div>
@@ -118,6 +172,11 @@ function Form({ formData, onInputChange, onImageUpload, disabled = false }) {
       {/* Seção: Hero */}
       {activeSection === 'hero' && (
         <div className="form-section">
+          <div className="section-header">
+            <h3>Seção Hero</h3>
+            <div className="section-line"></div>
+          </div>
+          
           <FormField
             label="Título Principal *"
             name="tituloHero"
@@ -135,31 +194,42 @@ function Form({ formData, onInputChange, onImageUpload, disabled = false }) {
             disabled={disabled}
           />
           
-          <div className="form-field">
+          <div className="form-field file-upload-field">
             <label>Imagem de Fundo</label>
-            <input
-              type="file"
-              accept="image/*"
-              onChange={onImageUpload}
-              disabled={disabled}
-            />
+            <div className="file-upload-container">
+              <input
+                type="file"
+                id="hero-image"
+                accept="image/*"
+                onChange={onImageUpload}
+                disabled={disabled}
+                className="file-input"
+              />
+              <label htmlFor="hero-image" className="file-upload-label">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M3 16V17C3 18.6569 4.34315 20 6 20H18C19.6569 20 21 18.6569 21 17V16" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M12 3V16M12 3L7 8M12 3L17 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+                Escolher arquivo
+              </label>
+            </div>
             <p className="field-tip">Recomendado: 1920x1080px ou maior</p>
           </div>
           
           <div className="section-navigation">
             <button 
-              className="nav-button prev" 
+              className="prev-button" 
               onClick={() => setActiveSection('empresa')}
               disabled={disabled}
             >
-              ← Anterior: Dados da Empresa
+              <span className="button-icon">←</span> Anterior
             </button>
             <button 
-              className="nav-button next" 
+              className="next-button" 
               onClick={() => setActiveSection('servicos')}
               disabled={disabled}
             >
-              Próximo: Serviços →
+              Próximo <span className="button-icon">→</span>
             </button>
           </div>
         </div>
@@ -168,8 +238,16 @@ function Form({ formData, onInputChange, onImageUpload, disabled = false }) {
       {/* Seção: Serviços */}
       {activeSection === 'servicos' && (
         <div className="form-section">
+          <div className="section-header">
+            <h3>Serviços</h3>
+            <div className="section-line"></div>
+          </div>
+          
           <div className="service-group">
-            <h4>Serviço 1</h4>
+            <div className="service-header">
+              <div className="service-number">1</div>
+              <h4>Serviço 1</h4>
+            </div>
             <FormField
               label="Nome do Serviço"
               name="servico1Nome"
@@ -189,7 +267,10 @@ function Form({ formData, onInputChange, onImageUpload, disabled = false }) {
           </div>
           
           <div className="service-group">
-            <h4>Serviço 2</h4>
+            <div className="service-header">
+              <div className="service-number">2</div>
+              <h4>Serviço 2</h4>
+            </div>
             <FormField
               label="Nome do Serviço"
               name="servico2Nome"
@@ -209,7 +290,10 @@ function Form({ formData, onInputChange, onImageUpload, disabled = false }) {
           </div>
           
           <div className="service-group">
-            <h4>Serviço 3</h4>
+            <div className="service-header">
+              <div className="service-number">3</div>
+              <h4>Serviço 3</h4>
+            </div>
             <FormField
               label="Nome do Serviço"
               name="servico3Nome"
@@ -230,18 +314,18 @@ function Form({ formData, onInputChange, onImageUpload, disabled = false }) {
           
           <div className="section-navigation">
             <button 
-              className="nav-button prev" 
+              className="prev-button" 
               onClick={() => setActiveSection('hero')}
               disabled={disabled}
             >
-              ← Anterior: Seção Hero
+              <span className="button-icon">←</span> Anterior
             </button>
             <button 
-              className="nav-button next" 
+              className="next-button" 
               onClick={() => setActiveSection('quemSomos')}
               disabled={disabled}
             >
-              Próximo: Quem Somos →
+              Próximo <span className="button-icon">→</span>
             </button>
           </div>
         </div>
@@ -250,6 +334,11 @@ function Form({ formData, onInputChange, onImageUpload, disabled = false }) {
       {/* Seção: Quem Somos */}
       {activeSection === 'quemSomos' && (
         <div className="form-section">
+          <div className="section-header">
+            <h3>Quem Somos</h3>
+            <div className="section-line"></div>
+          </div>
+          
           <FormField
             label="Texto Institucional"
             name="quemSomos"
@@ -262,14 +351,14 @@ function Form({ formData, onInputChange, onImageUpload, disabled = false }) {
           
           <div className="section-navigation">
             <button 
-              className="nav-button prev" 
+              className="prev-button" 
               onClick={() => setActiveSection('servicos')}
               disabled={disabled}
             >
-              ← Anterior: Serviços
+              <span className="button-icon">←</span> Anterior
             </button>
             <button 
-              className="nav-button complete" 
+              className="complete-button" 
               onClick={() => setActiveSection('empresa')}
               disabled={disabled}
             >
@@ -281,7 +370,7 @@ function Form({ formData, onInputChange, onImageUpload, disabled = false }) {
       
       {/* Indicador de campos obrigatórios */}
       <div className="required-fields-note">
-        <p>* Campos obrigatórios</p>
+        <span className="required-indicator">*</span> Campos obrigatórios
       </div>
     </div>
   );
