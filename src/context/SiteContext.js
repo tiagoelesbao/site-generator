@@ -1,5 +1,5 @@
 // src/context/SiteContext.js
-import React, { createContext, useContext, useReducer, useEffect } from 'react';
+import React, { createContext, useContext, useReducer } from 'react';
 
 // Estado inicial da aplicação
 const initialState = {
@@ -28,8 +28,7 @@ const initialState = {
   generationError: null,
   publishResult: null,
   isPublishing: false,
-  zipBlob: null,
-  logs: []
+  zipBlob: null
 };
 
 // Tipos de ações para o reducer
@@ -42,7 +41,6 @@ const ACTION_TYPES = {
   SET_PUBLISH_RESULT: 'SET_PUBLISH_RESULT',
   SET_IS_PUBLISHING: 'SET_IS_PUBLISHING',
   SET_ZIP_BLOB: 'SET_ZIP_BLOB',
-  ADD_LOG: 'ADD_LOG',
   RESET_STATE: 'RESET_STATE'
 };
 
@@ -92,16 +90,6 @@ function siteReducer(state, action) {
         ...state,
         zipBlob: action.payload
       };
-    case ACTION_TYPES.ADD_LOG:
-      return {
-        ...state,
-        logs: [...state.logs, {
-          timestamp: new Date().toISOString(),
-          level: action.level,
-          message: action.message,
-          data: action.data
-        }]
-      };
     case ACTION_TYPES.RESET_STATE:
       return {
         ...initialState
@@ -126,44 +114,6 @@ export function useSiteContext() {
 // Provedor do contexto
 export function SiteProvider({ children }) {
   const [state, dispatch] = useReducer(siteReducer, initialState);
-
-  // Logger centralizado
-  const logger = {
-    info: (message, data) => {
-      dispatch({ 
-        type: ACTION_TYPES.ADD_LOG, 
-        level: 'info', 
-        message, 
-        data 
-      });
-      console.info(message, data);
-    },
-    warn: (message, data) => {
-      dispatch({ 
-        type: ACTION_TYPES.ADD_LOG, 
-        level: 'warn', 
-        message, 
-        data 
-      });
-      console.warn(message, data);
-    },
-    error: (message, data) => {
-      dispatch({ 
-        type: ACTION_TYPES.ADD_LOG, 
-        level: 'error', 
-        message, 
-        data 
-      });
-      console.error(message, data);
-    }
-  };
-
-  // Persistir logs no localStorage em desenvolvimento
-  useEffect(() => {
-    if (process.env.NODE_ENV === 'development') {
-      localStorage.setItem('siteGeneratorLogs', JSON.stringify(state.logs));
-    }
-  }, [state.logs]);
 
   // Ações para atualizar o estado
   const actions = {
@@ -197,18 +147,12 @@ export function SiteProvider({ children }) {
         type: ACTION_TYPES.SET_GENERATION_ERROR, 
         payload: error 
       });
-      if (error) {
-        logger.error('Erro na geração do site', error);
-      }
     },
     setPublishResult: (result) => {
       dispatch({ 
         type: ACTION_TYPES.SET_PUBLISH_RESULT, 
         payload: result 
       });
-      if (result) {
-        logger.info('Site publicado com sucesso', result);
-      }
     },
     setIsPublishing: (isPublishing) => {
       dispatch({ 
@@ -224,6 +168,18 @@ export function SiteProvider({ children }) {
     },
     resetState: () => {
       dispatch({ type: ACTION_TYPES.RESET_STATE });
+    }
+  };
+
+  const logger = {
+    info: (message, data) => {
+      console.info(message, data);
+    },
+    warn: (message, data) => {
+      console.warn(message, data);
+    },
+    error: (message, data) => {
+      console.error(message, data);
     }
   };
 
