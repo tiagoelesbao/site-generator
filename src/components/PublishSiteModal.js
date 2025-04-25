@@ -1,51 +1,18 @@
-// src/components/PublishSiteModal.js
+// src/components/PublishSiteModal.js (refatorado)
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { publishToNetlify, setNetlifyToken } from '../utils/netlifyAPI';
-import { simulateZohoSetup, forceZohoDemo, setupZohoWithNetlify } from '../utils/zohoAPI';
+import { useSiteContext } from '../context/SiteContext';
+import { publishToNetlify } from '../utils/netlifyAPI';
+import { setupZohoWithNetlify, forceZohoDemo } from '../utils/zohoAPI';
+import { validateDomain } from '../utils/validators';
+import { PUBLISHING_PLANS } from '../constants/publishingPlans';
 
-// Constantes para planos
-const PUBLISHING_PLANS = {
-  BASIC: {
-    id: 'basic_publishing',
-    name: 'Publicação Básica',
-    description: 'Publicação do site com subdomínio gratuito',
-    price: 0,
-    features: [
-      'Hospedagem na Netlify',
-      'Subdomínio gratuito (seusite.netlify.app)',
-      'HTTPS incluído',
-      'Sem limite de tráfego'
-    ],
-    icon: 'cloud_upload'
-  },
-  CUSTOM_DOMAIN: {
-    id: 'custom_domain',
-    name: 'Domínio Personalizado',
-    description: 'Publicação com seu domínio personalizado',
-    price: 1500, // R$ 15,00 em centavos
-    features: [
-      'Todos os recursos do plano básico',
-      'Uso de domínio próprio',
-      'Configuração automática de DNS',
-      'Certificado SSL gratuito'
-    ],
-    icon: 'language'
-  },
-  DOMAIN_REGISTRATION: {
-    id: 'domain_registration',
-    name: 'Registro de Domínio',
-    description: 'Registre um novo domínio e publique seu site',
-    price: 4500, // R$ 45,00 em centavos
-    features: [
-      'Todos os recursos do plano com domínio personalizado',
-      'Registro de domínio .com.br por 1 ano',
-      'Renovação automática opcional',
-      'Painel de gerenciamento do domínio'
-    ],
-    icon: 'verified'
-  }
-};
+// Importar componentes modularizados
+import PlanSelection from './publish/PlanSelection';
+import PaymentStep from './publish/PaymentStep';
+import PublishingStatus from './publish/PublishingStatus';
+import PublishSuccess from './publish/PublishSuccess';
+import TokenInputForm from './publish/TokenInputForm';
 
 function PublishSiteModal({ 
   isOpen, 
@@ -54,10 +21,11 @@ function PublishSiteModal({
   zipBlob, 
   onPublishSuccess
 }) {
+  const { logger } = useSiteContext();
   const [selectedPlan, setSelectedPlan] = useState('BASIC');
   const [customDomain, setCustomDomain] = useState('');
   const [isPublishing, setIsPublishing] = useState(false);
-  const [publishStep, setPublishStep] = useState(1); // 1: Selecionar plano, 2: Pagamento, 3: Publicação, 4: Concluído
+  const [publishStep, setPublishStep] = useState(1); 
   const [publishResult, setPublishResult] = useState(null);
   const [paymentError, setPaymentError] = useState(null);
   const [emailSetupResult, setEmailSetupResult] = useState(null);
@@ -81,22 +49,14 @@ function PublishSiteModal({
   
   // Verificar token do Netlify ao montar o componente
   useEffect(() => {
-    // Verificar se já temos um token no localStorage
     const storedToken = localStorage.getItem('netlify_token');
     
-    // Se não houver token e estiver em ambiente de desenvolvimento, mostrar opção
     if (process.env.NODE_ENV === 'development' && !storedToken) {
       setShowTokenInput(true);
     }
   }, []);
   
-  const validateDomain = (domain) => {
-    // Regex para validar domínios
-    const domainRegex = /^[a-zA-Z0-9][a-zA-Z0-9-]{1,61}[a-zA-Z0-9](\.[a-zA-Z]{2,})+$/;
-    return domainRegex.test(domain);
-  };
-  
-  // Handler para mudança de plano
+  // Handlers para os componentes
   const handlePlanChange = (planId) => {
     setSelectedPlan(planId);
     
@@ -107,7 +67,6 @@ function PublishSiteModal({
     }
   };
   
-  // Toggle modo de teste
   const toggleTestingMode = () => {
     setTestingMode(!testingMode);
     if (!testingMode && !customDomain) {
@@ -118,102 +77,115 @@ function PublishSiteModal({
     }
   };
   
-  // Salvar token manual
-  const handleSaveToken = () => {
-    if (manualToken.trim()) {
-      setNetlifyToken(manualToken.trim());
-      setShowTokenInput(false);
-      setPaymentError(null);
+  const handleSaveToken = (token) => {
+    if (token.trim()) {
+      try {
+        localStorage.setItem('netlify_token', token.trim());
+        setShowTokenInput(false);
+        setPaymentError(null);
+        logger.info('Token do Netlify salvo com sucesso');
+      } catch (error) {
+        logger.error('Erro ao salvar token', error);
+        setPaymentError('Erro ao salvar token. Verifique as permissões do navegador.');
+      }
     }
   };
   
-  // Avançar para o passo de pagamento
   const handleContinueToPayment = () => {
-    // Validar domínio para planos que precisam (ignorar em modo de teste)
-    if (selectedPlan !== 'BASIC' && !testingMode && !validateDomain(customDomain)) {
-      setPaymentError('Por favor, insira um domínio válido.');
-      return;
+    // Validar domínio para planos que precisam
+    if (selectedPlan !== 'BASIC' && !testingMode) {
+      if (!validateDomain(customDomain)) {
+        setPaymentError('Por favor, insira um domínio válido.');
+        logger.warn('Validação de domínio falhou', { domain: customDomain });
+        return;
+      }
     }
     
+    logger.info('Avançando para etapa de pagamento', { 
+      plan: selectedPlan, 
+      domain: customDomain 
+    });
     setPaymentError(null);
     setPublishStep(2);
   };
   
-  // Processar pagamento e publicar
   const handlePublish = async () => {
     try {
       setIsPublishing(true);
       setPaymentError(null);
+      logger.info('Iniciando publicação do site', { 
+        plan: selectedPlan, 
+        testing: testingMode 
+      });
       
       // Avançar para o estado de "publicando"
       setPublishStep(3);
       
-      // Se for o plano básico, publicar diretamente no Netlify
-      if (selectedPlan === 'BASIC') {
-        // Criar objeto FormData
-        const formData = new FormData();
-        formData.append('file', zipBlob, 'site.zip');
-        formData.append('site_name', siteData.empresa?.toLowerCase().replace(/[^\w]/g, '-') || 'meu-site');
-        
+      let result;
+      
+      // Sistema de retentativas
+      const maxRetries = 3;
+      let retryCount = 0;
+      let success = false;
+      
+      while (retryCount < maxRetries && !success) {
         try {
-          // Chamar função Netlify
-          const response = await fetch('/.netlify/functions/publish-site', {
-            method: 'POST',
-            body: formData
-          });
-          
-          if (!response.ok) {
-            throw new Error(`Erro na publicação: ${response.statusText}`);
+          if (retryCount > 0) {
+            logger.warn(`Tentativa ${retryCount + 1} de publicação`);
           }
           
-          const result = await response.json();
-          
-          // Definir resultado e avançar para o próximo passo
-          setPublishResult(result);
-          setPublishStep(4);
-          
-          if (onPublishSuccess) {
-            onPublishSuccess(result);
-          }
-        } catch (error) {
-          console.error('Erro na publicação:', error);
-          setPaymentError(`Erro na publicação: ${error.message}`);
-          setPublishStep(2); // Voltar para o passo anterior
-        }
-      } else {
-        // Para outros planos, simular o fluxo para demonstração
-        // Em uma implementação real, adicionaríamos a integração com o gateway de pagamento
-        const demoResult = createDemoResult();
-        
-        // Simulação de configuração de email para o plano de domínio
-        if (selectedPlan === 'DOMAIN_REGISTRATION') {
-          setIsSettingUpEmails(true);
-          try {
-            const emailResult = await forceZohoDemo(
-              customDomain,
-              siteData.email || 'admin@example.com'
-            );
+          if (selectedPlan === 'BASIC') {
+            result = await publishToNetlify(zipBlob, {
+              name: siteData.empresa?.toLowerCase().replace(/[^\w]/g, '-') || 'meu-site'
+            });
+          } else {
+            // Simulação para planos pagos
+            result = createDemoResult();
             
-            setEmailSetupResult(emailResult);
-            demoResult.emailSetup = emailResult;
-          } catch (error) {
-            console.error('Erro na configuração de email:', error);
-            demoResult.emailError = error.message;
-          } finally {
-            setIsSettingUpEmails(false);
+            // Configuração de email para registro de domínio
+            if (selectedPlan === 'DOMAIN_REGISTRATION') {
+              setIsSettingUpEmails(true);
+              try {
+                const emailResult = await forceZohoDemo(
+                  customDomain,
+                  siteData.email || 'admin@example.com'
+                );
+                
+                setEmailSetupResult(emailResult);
+                result.emailSetup = emailResult;
+              } catch (error) {
+                logger.error('Erro na configuração de email', error);
+                result.emailError = error.message;
+              } finally {
+                setIsSettingUpEmails(false);
+              }
+            }
           }
-        }
-        
-        // Definir resultado e avançar para o passo final
-        setPublishResult(demoResult);
-        setPublishStep(4);
-        
-        if (onPublishSuccess) {
-          onPublishSuccess(demoResult);
+          
+          success = true;
+        } catch (error) {
+          retryCount++;
+          if (retryCount >= maxRetries) {
+            throw error;
+          }
+          
+          // Esperar antes de tentar novamente (backoff exponencial)
+          const delay = 2000 * Math.pow(2, retryCount - 1);
+          logger.warn(`Erro na tentativa ${retryCount}. Aguardando ${delay}ms antes de tentar novamente`, error);
+          await new Promise(resolve => setTimeout(resolve, delay));
         }
       }
+      
+      // Definir resultado e avançar para o próximo passo
+      logger.info('Publicação concluída com sucesso', result);
+      setPublishResult(result);
+      setPublishStep(4);
+      
+      if (onPublishSuccess) {
+        onPublishSuccess(result);
+      }
     } catch (error) {
-      console.error('Erro geral na publicação:', error);
+      logger.error('Erro na publicação', error);
       setPaymentError(`Erro ao publicar: ${error.message}`);
       setPublishStep(2); // Voltar para o passo anterior
     } finally {
@@ -260,39 +232,8 @@ function PublishSiteModal({
       setPublishResult(null);
       setTestingMode(false);
       setShowTokenInput(false);
+      logger.info('Modal de publicação fechado');
       onClose();
-    }
-  };
-  
-  // Renderizar ícone do plano
-  const renderPlanIcon = (iconName) => {
-    // SVG icons com estilos premium
-    switch(iconName) {
-      case 'cloud_upload':
-        return (
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M19 16V21H5V16" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-            <path d="M12 3V16M12 3L8 7M12 3L16 7" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-        );
-      case 'language':
-        return (
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="12" cy="12" r="10" stroke="white" strokeWidth="1.5"/>
-            <path d="M12 2C16.9706 2 21 6.02944 21 11C21 15.9706 16.9706 20 12 20" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
-            <path d="M2 12H22" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
-            <path d="M12 2V22" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
-          </svg>
-        );
-      case 'verified':
-        return (
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M9 12L11 14L15 10" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-            <path d="M12 22C12 22 20 18 20 12V5L12 2L4 5V12C4 18 12 22 12 22Z" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-        );
-      default:
-        return null;
     }
   };
   
@@ -310,352 +251,59 @@ function PublishSiteModal({
         <div className="modal-content">
           {/* Input manual de token para desenvolvimento */}
           {showTokenInput && process.env.NODE_ENV === 'development' && (
-            <div className="token-input-container">
-              <h4>Inserir Token do Netlify</h4>
-              <p className="token-note">Apenas para ambiente de desenvolvimento. Insira um token de API válido do Netlify.</p>
-              <div className="token-input-group">
-                <input
-                  type="text"
-                  value={manualToken}
-                  onChange={(e) => setManualToken(e.target.value)}
-                  placeholder="Seu token de API do Netlify"
-                  className="token-field"
-                />
-                <button 
-                  onClick={handleSaveToken}
-                  className="token-save-btn"
-                  disabled={!manualToken.trim()}
-                >
-                  Salvar
-                </button>
-              </div>
-              <div className="token-actions">
-                <button 
-                  onClick={() => setShowTokenInput(false)}
-                  className="secondary-button"
-                >
-                  Cancelar
-                </button>
-                <button 
-                  onClick={() => {
-                    setShowTokenInput(false);
-                    setTestingMode(true);
-                  }}
-                  className="primary-button"
-                >
-                  Usar Modo de Demonstração
-                </button>
-              </div>
-            </div>
+            <TokenInputForm 
+              manualToken={manualToken}
+              setManualToken={setManualToken}
+              onSaveToken={handleSaveToken}
+              onCancel={() => setShowTokenInput(false)}
+              onDemoMode={() => {
+                setShowTokenInput(false);
+                setTestingMode(true);
+              }}
+            />
           )}
           
           {/* Passo 1: Seleção de plano */}
           {!showTokenInput && publishStep === 1 && (
-            <div className="plan-selection">
-              <h3>Escolha um plano de publicação</h3>
-              
-              <div className="plans-grid">
-                {Object.keys(PUBLISHING_PLANS).map((planKey) => {
-                  const plan = PUBLISHING_PLANS[planKey];
-                  return (
-                    <div 
-                      key={planKey}
-                      className={`plan-card ${selectedPlan === planKey ? 'selected' : ''}`}
-                      onClick={() => handlePlanChange(planKey)}
-                    >
-                      <div className="plan-card-inner">
-                        <div className="plan-icon">
-                          {renderPlanIcon(plan.icon)}
-                        </div>
-                        <div className="plan-header">
-                          <h4>{plan.name}</h4>
-                          <p className="plan-price">
-                            {plan.price === 0 ? 
-                              <span className="free-tag">Grátis</span> : 
-                              `R$ ${(plan.price / 100).toFixed(2)}`
-                            }
-                          </p>
-                        </div>
-                        
-                        <p className="plan-description">{plan.description}</p>
-                        
-                        <ul className="plan-features">
-                          {plan.features.map((feature, index) => (
-                            <li key={index}>
-                              <span className="feature-icon">✓</span>
-                              {feature}
-                            </li>
-                          ))}
-                        </ul>
-                        
-                        {selectedPlan === planKey && (
-                          <div className="selected-badge">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                              <circle cx="12" cy="12" r="11" stroke="white" strokeWidth="1.5"/>
-                              <path d="M8 12L11 15L16 9" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                            </svg>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-              
-              {/* Campo de domínio para planos pagos */}
-              {selectedPlan !== 'BASIC' && (
-                <div className="domain-input-container">
-                  <label htmlFor="custom-domain">Domínio:</label>
-                  <input
-                    type="text"
-                    id="custom-domain"
-                    placeholder="exemplo.com.br"
-                    value={customDomain}
-                    onChange={(e) => setCustomDomain(e.target.value)}
-                    className={testingMode ? "testing-mode-input" : ""}
-                  />
-                  <p className="domain-hint">
-                    {selectedPlan === 'DOMAIN_REGISTRATION' 
-                      ? 'Domínio a ser registrado' 
-                      : 'Domínio que você já possui'}
-                  </p>
-                  
-                  {/* Opção de modo de teste */}
-                  <div className="testing-mode-option">
-                    <input
-                      type="checkbox"
-                      id="testing-mode"
-                      checked={testingMode}
-                      onChange={toggleTestingMode}
-                    />
-                    <label htmlFor="testing-mode" className="testing-label">
-                      Modo de teste
-                    </label>
-                  </div>
-                  {testingMode && (
-                    <p className="testing-mode-note">
-                      No modo de teste, o domínio não será verificado e a configuração será simulada.
-                    </p>
-                  )}
-                </div>
-              )}
-              
-              {paymentError && <p className="error-message">{paymentError}</p>}
-              
-              <div className="modal-actions">
-                <button className="secondary-button" onClick={handleClose}>Cancelar</button>
-                <button className="primary-button" onClick={handleContinueToPayment}>
-                  Continuar
-                </button>
-              </div>
-            </div>
+            <PlanSelection 
+              selectedPlan={selectedPlan}
+              onPlanChange={handlePlanChange}
+              customDomain={customDomain}
+              setCustomDomain={setCustomDomain}
+              testingMode={testingMode}
+              toggleTestingMode={toggleTestingMode}
+              errorMessage={paymentError}
+            />
           )}
           
-          {/* Passo 2: Pagamento (para planos pagos) */}
+          {/* Passo 2: Pagamento */}
           {!showTokenInput && publishStep === 2 && (
-            <div className="payment-section">
-            <h3 className="publish-step-title">Pagamento</h3>
-            
-            {selectedPlan !== 'BASIC' ? (
-              <div className="payment-summary">
-                <h4>Resumo do pedido</h4>
-                <div className="payment-details">
-                  <p><strong>Plano:</strong> {PUBLISHING_PLANS[selectedPlan].name}</p>
-                  <p><strong>Valor:</strong> R$ {(PUBLISHING_PLANS[selectedPlan].price / 100).toFixed(2)}</p>
-                  {customDomain && <p><strong>Domínio:</strong> {customDomain}</p>}
-                  {testingMode && <div className="testing-mode-tag">MODO DE TESTE ATIVADO</div>}
-                </div>
-                
-                <div className="payment-notice">
-                  {testingMode 
-                    ? "Modo de teste ativado. O fluxo completo será simulado sem pagamento real."
-                    : "Estamos simulando o pagamento. Clique em \"Publicar\" para continuar sem pagamento real."}
-                </div>
-              </div>
-            ) : (
-              <div className="free-plan-notice">
-                <div className="success-icon">✓</div>
-                <p>Você selecionou o plano gratuito. Não é necessário pagamento.</p>
-              </div>
-            )}
-            
-            {paymentError && (
-              <div className="error-message">
-                <div className="error-icon">!</div>
-                <p>{paymentError}</p>
-              </div>
-            )}
-            
-            <div className="modal-actions">
-              <button 
-                className="secondary-button" 
-                onClick={() => setPublishStep(1)}
-                disabled={isPublishing}
-              >
-                Voltar
-              </button>
-              
-              <button 
-                className="primary-button" 
-                onClick={handlePublish}
-                disabled={isPublishing}
-              >
-                {isPublishing ? 'Processando...' : 'Publicar Agora'}
-              </button>
-            </div>
-          </div>
+            <PaymentStep 
+              selectedPlan={selectedPlan}
+              customDomain={customDomain}
+              testingMode={testingMode}
+              errorMessage={paymentError}
+              onBack={() => setPublishStep(1)}
+              onPublish={handlePublish}
+              isPublishing={isPublishing}
+            />
           )}
           
           {/* Passo 3: Publicação em andamento */}
           {publishStep === 3 && (
-            <div className="publishing-status">
-              <div className="loader">
-                <div className="loader-inner"></div>
-              </div>
-              <h3>Publicando seu site...</h3>
-              <p>Esse processo pode levar alguns instantes.</p>
-              {isSettingUpEmails && (
-                <p>Configurando emails profissionais...</p>
-              )}
-              {testingMode && (
-                <p className="testing-mode-tag">MODO DE TESTE ATIVADO</p>
-              )}
-            </div>
+            <PublishingStatus 
+              isSettingUpEmails={isSettingUpEmails}
+              testingMode={testingMode}
+            />
           )}
           
           {/* Passo 4: Publicação concluída */}
           {publishStep === 4 && publishResult && (
-            <div className="publish-success">
-              <div className="success-icon">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M5 12L10 17L19 8" stroke="black" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-              </div>
-              <h3>Site publicado com sucesso!</h3>
-              
-              {(testingMode || publishResult.demo_mode) && (
-                <div className="testing-banner">
-                  <p>⚠️ MODO DE DEMONSTRAÇÃO ⚠️</p>
-                  <p>Esta é uma simulação para fins de desenvolvimento.</p>
-                </div>
-              )}
-              
-              <div className="site-info">
-                <p><strong>URL do site:</strong></p>
-                <a 
-                  href={publishResult.netlifyUrl || publishResult.site?.url} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="site-url"
-                >
-                  {publishResult.netlifyUrl || publishResult.site?.url}
-                </a>
-                
-                {publishResult.domainInstructions && (
-                  <div className="domain-instructions">
-                    <h4>Configuração de DNS necessária:</h4>
-                    <p>Para que seu domínio personalizado funcione, você precisa configurar os seguintes registros DNS:</p>
-                    
-                    <div className="dns-records">
-                      {publishResult.domainInstructions.dns_instructions.map((record, index) => (
-                        <div key={index} className="dns-record">
-                          <p><strong>Tipo:</strong> {record.type}</p>
-                          <p><strong>Nome/Host:</strong> {record.hostname}</p>
-                          <p><strong>Valor/Destino:</strong> {record.value}</p>
-                          <p><strong>TTL:</strong> {record.ttl}</p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-              
-              {/* Seção de resultados de email */}
-              {publishResult.emailSetup && (
-                <div className="email-setup-results">
-                  <h4>Emails Profissionais Configurados</h4>
-                  
-                  {publishResult.emailSetup.success ? (
-                    <>
-                      <div className="email-success">
-                        <span className="success-check">✓</span> 
-                        Seus emails profissionais foram configurados com sucesso!
-                      </div>
-                      
-                      <div className="email-accounts">
-                        <p><strong>Detalhes dos emails criados:</strong></p>
-                        
-                        {publishResult.emailSetup.emailAccounts.map((account, index) => (
-                          <div key={index} className="email-account-card">
-                            <div className="email-account-icon">
-                              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <rect x="2" y="4" width="20" height="16" rx="3" stroke="white" strokeWidth="1.5"/>
-                                <path d="M22 7L13.03 12.7756C12.3851 13.1924 11.6149 13.1924 10.97 12.7756L2 7" stroke="white" strokeWidth="1.5"/>
-                              </svg>
-                            </div>
-                            <div className="email-account-info">
-                              <h5>{account.address}</h5>
-                              <div className="password-field">
-                                <span className="password-label">Senha:</span>
-                                <span className="password-value">{account.password}</span>
-                              </div>
-                              <p className="security-note">Anote esta senha! Por segurança, ela só será exibida uma vez.</p>
-                            </div>
-                          </div>
-                        ))}
-                        
-                        <p className="email-login-info">
-                          <strong>Acesse seus emails em:</strong> 
-                          <a href={publishResult.emailSetup.loginUrl} target="_blank" rel="noopener noreferrer" 
-                            className="email-login-link">
-                            {publishResult.emailSetup.loginUrl}
-                          </a>
-                        </p>
-                        
-                        {/* Status de configuração DNS */}
-                        {publishResult.emailSetup.dnsConfigured ? (
-                          <div className="dns-auto-configured">
-                            <div className="auto-dns-badge">
-                              <span className="auto-icon">✓</span> DNS Configurado Automaticamente
-                            </div>
-                            <p>Todas as configurações DNS necessárias para seus emails foram feitas automaticamente!</p>
-                            <p>O processo de verificação e ativação pode levar até 24-48 horas.</p>
-                          </div>
-                        ) : (
-                          <div className="dns-manual-setup">
-                            <h5>Configuração Manual Necessária</h5>
-                            <p>Para ativar seus emails, adicione estes registros DNS no seu provedor de domínio:</p>
-                            
-                            <div className="dns-records-list">
-                              {/* Lista de registros DNS omitida por brevidade */}
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    </>
-                  ) : (
-                    <div className="email-setup-error">
-                      <p><strong>Erro na configuração de emails:</strong> {publishResult.emailSetup.error}</p>
-                      <p>Você pode tentar configurar seus emails manualmente mais tarde.</p>
-                    </div>
-                  )}
-                </div>
-              )}
-              
-              <div className="modal-actions">
-                <button className="secondary-button" onClick={handleClose}>Fechar</button>
-                {!testingMode && !publishResult.demo_mode && (
-                  <a 
-                    href={publishResult.netlifyUrl || publishResult.site?.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="primary-button visit-button"
-                  >
-                    Visitar Site
-                  </a>
-                )}
-              </div>
-            </div>
+            <PublishSuccess 
+              publishResult={publishResult}
+              testingMode={testingMode}
+              handleClose={handleClose}
+            />
           )}
         </div>
       </div>
