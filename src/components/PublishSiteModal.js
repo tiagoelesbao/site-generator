@@ -1,5 +1,6 @@
-// src/components/PublishSiteModal.js - Versão corrigida com estilo premium
+// src/components/PublishSiteModal.js
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { publishToNetlify, setNetlifyToken } from '../utils/netlifyAPI';
 import { simulateZohoSetup, forceZohoDemo, setupZohoWithNetlify } from '../utils/zohoAPI';
 
@@ -64,6 +65,19 @@ function PublishSiteModal({
   const [testingMode, setTestingMode] = useState(false);
   const [manualToken, setManualToken] = useState('');
   const [showTokenInput, setShowTokenInput] = useState(false);
+  
+  // Bloquear scroll quando modal está aberto
+  useEffect(() => {
+    if (isOpen) {
+      document.body.classList.add('modal-open');
+    } else {
+      document.body.classList.remove('modal-open');
+    }
+    
+    return () => {
+      document.body.classList.remove('modal-open');
+    };
+  }, [isOpen]);
   
   // Verificar token do Netlify ao montar o componente
   useEffect(() => {
@@ -282,9 +296,10 @@ function PublishSiteModal({
     }
   };
   
+  // Usar createPortal para renderizar o modal diretamente no body
   if (!isOpen) return null;
   
-  return (
+  const modalContent = (
     <div className="modal-overlay">
       <div className="publish-modal">
         <div className="modal-header">
@@ -646,6 +661,8 @@ function PublishSiteModal({
       </div>
     </div>
   );
+  
+  return createPortal(modalContent, document.body);
 }
 
 export default PublishSiteModal;

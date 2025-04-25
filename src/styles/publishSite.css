@@ -1,17 +1,22 @@
-/* src/styles/publishSite.css - Versão corrigida e compatível com tema escuro */
+/* src/styles/publishSite.css */
+
+/* Estilos para <body> quando o modal está aberto */
+body.modal-open {
+  overflow: hidden;
+}
 
 /* Estrutura do modal */
 .modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
-  right: 0;
-  bottom: 0;
+  width: 100%;
+  height: 100%;
   background-color: rgba(0, 0, 0, 0.7);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
+  z-index: 9999;
   backdrop-filter: blur(3px);
 }
 
@@ -25,6 +30,23 @@
   overflow-y: auto;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
   border: 1px solid rgba(255, 255, 255, 0.1);
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.2) rgba(0, 0, 0, 0.2);
+}
+
+/* Estilização da barra de rolagem */
+.publish-modal::-webkit-scrollbar {
+  width: 8px;
+}
+
+.publish-modal::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+}
+
+.publish-modal::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
 }
 
 .modal-header {
@@ -33,6 +55,10 @@
   align-items: center;
   padding: 20px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  position: sticky;
+  top: 0;
+  background-color: var(--dark-bg-secondary, #121225);
+  z-index: 10;
 }
 
 .modal-header h2 {
@@ -191,18 +217,18 @@
 }
 
 /* Campo de domínio */
-.domain-input {
+.domain-input-container {
   margin: 20px 0;
 }
 
-.domain-input label {
+.domain-input-container label {
   display: block;
   margin-bottom: 8px;
   font-weight: bold;
   color: var(--text-primary, white);
 }
 
-.domain-input input {
+.domain-input-container input {
   width: 100%;
   padding: 12px;
   background-color: rgba(18, 18, 37, 0.6);
@@ -212,7 +238,7 @@
   font-size: 1rem;
 }
 
-.domain-input input:focus {
+.domain-input-container input:focus {
   border-color: var(--accent-primary, #824ee2);
   box-shadow: 0 0 0 2px rgba(130, 78, 226, 0.3);
   outline: none;
@@ -352,6 +378,17 @@
   border-radius: var(--border-radius, 8px);
   margin-bottom: 20px;
   color: #4CAF50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.free-plan-notice .success-icon {
+  margin-right: 0;
+  margin-bottom: 0;
+  width: 30px;
+  height: 30px;
 }
 
 /* Status de publicação */
@@ -361,13 +398,33 @@
 }
 
 .loader {
-  border: 5px solid rgba(255, 255, 255, 0.1);
-  border-top: 5px solid var(--accent-secondary, #30c9e8);
-  border-radius: 50%;
+  position: relative;
   width: 60px;
   height: 60px;
-  animation: spin 1.5s linear infinite;
   margin: 0 auto 25px;
+}
+
+.loader-inner {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 3px solid transparent;
+  border-top-color: var(--accent-secondary, #30c9e8);
+  animation: spin 1.5s linear infinite;
+}
+
+.loader::after {
+  content: '';
+  position: absolute;
+  top: 5px;
+  left: 5px;
+  right: 5px;
+  bottom: 5px;
+  border-radius: 50%;
+  border: 3px solid transparent;
+  border-top-color: var(--accent-primary, #824ee2);
+  opacity: 0.6;
+  animation: spin 2s linear infinite reverse;
 }
 
 @keyframes spin {
@@ -464,21 +521,65 @@
   border-radius: var(--border-radius, 8px);
   margin-top: 15px;
   border-left: 4px solid var(--error, #ff5b6f);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.error-message .error-icon {
+  flex-shrink: 0;
 }
 
 /* Configuração de Email com Zoho */
-.email-account {
+.email-account-card {
   background-color: rgba(66, 133, 244, 0.1);
   border-radius: var(--border-radius, 8px);
   padding: 20px;
   margin-bottom: 18px;
   border-left: 4px solid #4285f4;
+  display: flex;
+  align-items: flex-start;
+  gap: 15px;
 }
 
-.email-account h5 {
+.email-account-icon {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(66, 133, 244, 0.5);
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+}
+
+.email-account-info {
+  flex-grow: 1;
+}
+
+.email-account-info h5 {
   margin-top: 0;
   color: #4285f4;
   font-size: 1.1rem;
+}
+
+.password-field {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.password-label {
+  color: var(--text-secondary, #c0c0d0);
+}
+
+.password-value {
+  font-family: monospace;
+  background-color: rgba(0, 0, 0, 0.2);
+  padding: 4px 8px;
+  border-radius: 4px;
+  color: var(--text-primary, white);
 }
 
 .security-note {
@@ -506,47 +607,42 @@
   padding-top: 25px;
 }
 
-.email-details {
-  background-color: rgba(255, 255, 255, 0.03);
-  border-radius: var(--border-radius, 8px);
-  padding: 20px;
-  margin-bottom: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.email-usage {
-  margin-top: 25px;
-}
-
-.email-usage ol {
-  padding-left: 25px;
-  color: var(--text-secondary, #c0c0d0);
-}
-
-.email-usage li {
-  margin-bottom: 10px;
-}
-
-/* Classe específica de mensagem de sucesso para emails */
-.email-success-message {
+.email-success {
   display: flex;
   align-items: center;
-  color: var(--success, #4cc778);
+  color: #4cc778;
   margin-bottom: 20px;
 }
 
-.email-success-message .success-icon {
+.success-check {
   display: inline-flex;
   justify-content: center;
   align-items: center;
   width: 28px;
   height: 28px;
-  background-color: var(--success, #4cc778);
+  background-color: #4cc778;
   color: white;
   border-radius: 50%;
   margin-right: 12px;
   font-size: 16px;
   box-shadow: 0 0 10px rgba(76, 199, 120, 0.3);
+}
+
+.email-login-info {
+  margin-top: 20px;
+}
+
+.email-login-link {
+  color: var(--accent-secondary, #30c9e8);
+  text-decoration: none;
+  border-bottom: 1px dashed rgba(48, 201, 232, 0.5);
+  padding-bottom: 2px;
+  transition: border-color 0.3s;
+  margin-left: 8px;
+}
+
+.email-login-link:hover {
+  border-bottom: 1px solid var(--accent-secondary, #30c9e8);
 }
 
 /* Modo de teste */
@@ -589,7 +685,7 @@
   margin-top: 12px;
 }
 
-.testing-mode-banner {
+.testing-banner {
   background-color: rgba(255, 193, 7, 0.1);
   border: 1px solid rgba(255, 193, 7, 0.3);
   border-radius: var(--border-radius, 8px);
@@ -598,13 +694,13 @@
   text-align: center;
 }
 
-.testing-mode-banner p {
+.testing-banner p {
   margin: 5px 0;
   color: #ffc107;
   font-weight: 500;
 }
 
-.testing-mode-banner p:first-child {
+.testing-banner p:first-child {
   font-weight: 700;
 }
 
@@ -641,76 +737,8 @@
   margin-right: 10px;
 }
 
-.email-ready-estimate {
-  margin-top: 25px;
-  padding-top: 18px;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.time-estimate-bar {
-  margin-top: 20px;
-}
-
-.time-stages {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  position: relative;
-  padding: 25px 0;
-}
-
-.time-stages::before {
-  content: "";
-  position: absolute;
-  top: 35px;
-  left: 40px;
-  right: 40px;
-  height: 4px;
-  background-color: rgba(255, 255, 255, 0.1);
-  z-index: 0;
-}
-
-.time-stage {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  position: relative;
-  z-index: 1;
-}
-
-.stage-icon {
-  width: 35px;
-  height: 35px;
-  border-radius: 50%;
-  background-color: rgba(255, 255, 255, 0.1);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 10px;
-  color: var(--text-secondary, #c0c0d0);
-  font-weight: bold;
-}
-
-.time-stage.active .stage-icon {
-  background-color: var(--success, #4cc778);
-  color: white;
-  box-shadow: 0 0 10px rgba(76, 199, 120, 0.3);
-}
-
-.stage-label {
-  font-size: 0.9rem;
-  text-align: center;
-  color: var(--text-secondary, #c0c0d0);
-  max-width: 90px;
-}
-
-.time-stage.active .stage-label {
-  color: var(--success, #4cc778);
-  font-weight: 500;
-}
-
-/* Campo de entrada de token */
-.token-input {
+/* Entrada de token */
+.token-input-container {
   background-color: rgba(33, 150, 243, 0.1);
   border-radius: var(--border-radius, 8px);
   padding: 25px;
@@ -718,7 +746,7 @@
   border-left: 4px solid #2196F3;
 }
 
-.token-input h4 {
+.token-input-container h4 {
   margin-top: 0;
   color: #2196F3;
   font-size: 1.2rem;
@@ -779,6 +807,7 @@
 @media (max-width: 768px) {
   .publish-modal {
     width: 95%;
+    max-height: 80vh;
   }
   
   .plans-grid {
@@ -800,8 +829,39 @@
     flex-direction: column;
   }
   
-  .time-stages::before {
-    left: 20px;
-    right: 20px;
+  .token-actions {
+    flex-direction: column;
+  }
+  
+  .email-account-card {
+    flex-direction: column;
+  }
+  
+  .email-account-icon {
+    margin-bottom: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .modal-header h2 {
+    font-size: 1.5rem;
+  }
+  
+  .modal-content {
+    padding: 15px;
+  }
+  
+  .plan-card-inner {
+    padding: 15px;
+  }
+  
+  .plan-icon {
+    width: 50px;
+    height: 50px;
+  }
+  
+  .success-icon {
+    width: 50px;
+    height: 50px;
   }
 }
