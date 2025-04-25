@@ -537,8 +537,8 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 1000;
-    padding: 20px;
+    z-index: 2000; /* Corrigido: era 000 */
+    padding: 1; /* Removido padding que poderia descentralizar */
   }
   
   .publish-modal {
@@ -548,25 +548,38 @@
     width: 90%;
     max-width: 900px;
     max-height: 85vh;
+    margin: 0 auto; /* Centralização horizontal explícita */
     overflow-y: auto;
     box-shadow: var(--glow-medium);
     border: 1px solid var(--color-border);
     position: relative;
+    z-index: 2001; /* Adicionado z-index para garantir que fique acima da overlay */
     animation: modal-appear 0.4s ease;
+    transform: translateY(0); /* Garantir posição vertical correta */
   }
   
+  /* Animação refinada para evitar deslocamento */
   @keyframes modal-appear {
-    from { opacity: 0; transform: scale(0.95); }
-    to { opacity: 1; transform: scale(1); }
+    from { 
+      opacity: 0; 
+      transform: scale(0.95) translateY(10px); 
+    }
+    to { 
+      opacity: 1; 
+      transform: scale(1) translateY(0); 
+    }
   }
   
   .modal-header {
+    position: sticky; /* Manter cabeçalho visível ao rolar */
+    top: 0;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: var(--spacing-md) var(--spacing-md);
+    padding: var(--spacing-md);
     border-bottom: 1px solid var(--color-border);
-    position: relative;
+    background-color: var(--color-dark-gray); /* Garantir que o fundo seja opaco */
+    z-index: 10;
   }
   
   .modal-header h2 {
@@ -595,6 +608,7 @@
   
   .modal-content {
     padding: var(--spacing-lg);
+    overflow-x: hidden; /* Evitar rolagem horizontal */
   }
   
   /* Planos */
