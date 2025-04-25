@@ -538,6 +538,7 @@
     align-items: center;
     justify-content: center;
     z-index: 1000;
+    padding: 20px;
   }
   
   .publish-modal {
@@ -545,8 +546,8 @@
     color: var(--color-white);
     border-radius: var(--border-radius-lg);
     width: 90%;
-    max-width: 800px;
-    max-height: 90vh;
+    max-width: 900px;
+    max-height: 85vh;
     overflow-y: auto;
     box-shadow: var(--glow-medium);
     border: 1px solid var(--color-border);
@@ -593,7 +594,7 @@
   }
   
   .modal-content {
-    padding: var(--spacing-md);
+    padding: var(--spacing-lg);
   }
   
   /* Planos */
@@ -606,7 +607,7 @@
   
   .plans-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    grid-template-columns: repeat(3, 1fr);
     gap: var(--spacing-md);
     margin: var(--spacing-lg) 0;
   }
@@ -705,8 +706,8 @@
   
   /* Responsividade */
   @media (max-width: 768px) {
-    .app-title {
-      font-size: 2.2rem;
+    .plans-grid {
+      grid-template-columns: 1fr;
     }
     
     .app-main {
@@ -967,3 +968,243 @@
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
   }
+
+  .publish-step-title {
+    margin-bottom: var(--spacing-lg);
+    text-align: center;
+    color: var(--color-white);
+    font-family: var(--font-family-heading);
+    font-size: 1.5rem;
+  }
+
+  /* Ajustes para melhorar espaçamentos e alinhamentos */
+.modal-content {
+  padding: var(--spacing-lg);
+}
+
+/* Botões mais destacados e corrigidos */
+.primary-button, 
+.secondary-button {
+  min-width: 120px;
+  padding: 14px 24px;
+  border-radius: var(--border-radius-sm);
+  font-weight: 600;
+  cursor: pointer !important; /* Forçar cursor pointer para garantir interatividade */
+  transition: all var(--transition-fast);
+  position: relative;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: auto !important; /* Garantir que eventos do mouse sejam capturados */
+}
+
+/* Separar os botões adequadamente */
+.modal-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--spacing-md);
+  margin-top: var(--spacing-lg);
+  width: 100%;
+}
+
+/* Feedback visual para uploads */
+.file-name-display {
+  margin-top: 10px;
+  padding: 8px 12px;
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: var(--border-radius-sm);
+  color: var(--color-silver);
+  font-size: 0.9rem;
+  border: 1px dashed var(--color-border);
+}
+
+.upload-feedback {
+  margin-top: var(--spacing-sm);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--border-radius-sm);
+  font-size: 0.9rem;
+  background-color: rgba(255, 255, 255, 0.05);
+  border-left: 3px solid var(--color-accent-blue);
+}
+
+/* Estilos para diferentes estados dos planos */
+.plan-card.selected .plan-badge {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  width: 24px;
+  height: 24px;
+  background-color: var(--color-accent-blue);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--glow-subtle);
+  color: black;
+  font-weight: bold;
+}
+
+/* Correções para o modal de publicação */
+.free-plan-notice {
+  text-align: center;
+  padding: 20px;
+  background-color: rgba(200, 255, 220, 0.1);
+  border-radius: var(--border-radius-sm);
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.free-plan-notice .success-icon {
+  margin-right: 0;
+}
+
+.payment-summary {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--border-radius-md);
+  padding: 20px;
+  margin-bottom: 20px;
+  background-color: rgba(255, 255, 255, 0.03);
+}
+
+.payment-details {
+  margin-bottom: 15px;
+}
+
+.payment-notice {
+  background-color: rgba(255, 193, 7, 0.1);
+  padding: 15px;
+  border-radius: var(--border-radius-sm);
+  border-left: 3px solid rgba(255, 193, 7, 0.5);
+  margin-top: 15px;
+}
+
+.testing-mode-tag {
+  display: inline-block;
+  background-color: rgba(255, 0, 0, 0.15);
+  color: rgba(255, 100, 100, 0.9);
+  font-weight: bold;
+  padding: 4px 10px;
+  border-radius: 4px;
+  margin-top: 12px;
+}
+
+/* Garantir que botões no modal funcionem corretamente */
+.modal-actions button,
+.modal-actions a {
+  pointer-events: auto !important;
+  cursor: pointer !important;
+  user-select: auto !important;
+}
+
+/* Centralizar e melhorar visualização da tela de publicação */
+.publishing-status {
+  text-align: center;
+  padding: 40px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.publishing-status h3 {
+  margin: var(--spacing-md) 0;
+}
+
+/* Melhorias na visualização de domínios e DNS */
+.site-info {
+  margin: 25px 0;
+}
+
+.site-url {
+  display: block;
+  padding: 15px;
+  background-color: rgba(255, 255, 255, 0.05);
+  border-radius: var(--border-radius-sm);
+  margin: 15px 0;
+  word-break: break-all;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+}
+
+.domain-instructions {
+  margin-top: 25px;
+  padding: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--border-radius-sm);
+  background-color: rgba(255, 255, 255, 0.03);
+}
+
+.dns-records {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 15px;
+}
+
+.dns-record {
+  padding: 12px;
+  background-color: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--border-radius-sm);
+}
+
+/* Ajustes adicionais para responsividade */
+@media (max-width: 768px) {
+  .modal-content {
+    padding: var(--spacing-md);
+  }
+  
+  .modal-actions {
+    flex-direction: column;
+    width: 100%;
+  }
+  
+  .modal-actions button,
+  .modal-actions a {
+    width: 100%;
+    margin-bottom: 10px;
+  }
+  
+  .primary-button, 
+  .secondary-button {
+    width: 100%;
+  }
+  
+  .plan-card {
+    margin-bottom: var(--spacing-sm);
+  }
+}
+
+/* Corrigir a sobreposição do modal no rodapé */
+.modal-overlay {
+  z-index: 2000;
+}
+
+.publish-modal {
+  z-index: 2001;
+  margin: 20px 0;
+}
+
+/* Garantir que os modais são rolados independentemente */
+.publish-modal {
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+
+.publish-modal::-webkit-scrollbar {
+  width: 8px;
+}
+
+.publish-modal::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+}
+
+.publish-modal::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+}

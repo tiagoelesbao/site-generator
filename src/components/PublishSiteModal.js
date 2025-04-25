@@ -131,49 +131,79 @@ function PublishSiteModal({
       setIsPublishing(true);
       setPaymentError(null);
       
-      // Para o plano gratuito, pulamos o pagamento
+      // Avançar para o estado de "publicando"
       setPublishStep(3);
       
-      // Criar resultados de demonstração para todos os modos por enquanto
-      const demoResult = createDemoResult();
-      
-      // Simulação de configuração de email para planos com domínio
-      if (selectedPlan !== 'BASIC') {
-        setIsSettingUpEmails(true);
+      // Se for o plano básico, publicar diretamente no Netlify
+      if (selectedPlan === 'BASIC') {
+        // Criar objeto FormData
+        const formData = new FormData();
+        formData.append('file', zipBlob, 'site.zip');
+        formData.append('site_name', siteData.empresa?.toLowerCase().replace(/[^\w]/g, '-') || 'meu-site');
+        
         try {
-          const emailResult = await forceZohoDemo(
-            customDomain,
-            siteData.email || 'admin@example.com'
-          );
+          // Chamar função Netlify
+          const response = await fetch('/.netlify/functions/publish-site', {
+            method: 'POST',
+            body: formData
+          });
           
-          // Simulamos que a configuração DNS foi feita automaticamente
-          emailResult.dnsConfigured = true;
-          emailResult.emailSetupInstructions = "DNS configurado automaticamente! Suas caixas de email estarão ativas em breve.";
+          if (!response.ok) {
+            throw new Error(`Erro na publicação: ${response.statusText}`);
+          }
           
-          setEmailSetupResult(emailResult);
-          demoResult.emailSetup = emailResult;
+          const result = await response.json();
+          
+          // Definir resultado e avançar para o próximo passo
+          setPublishResult(result);
+          setPublishStep(4);
+          
+          if (onPublishSuccess) {
+            onPublishSuccess(result);
+          }
         } catch (error) {
-          console.error('Erro na configuração de email:', error);
-          demoResult.emailError = error.message;
-        } finally {
-          setIsSettingUpEmails(false);
+          console.error('Erro na publicação:', error);
+          setPaymentError(`Erro na publicação: ${error.message}`);
+          setPublishStep(2); // Voltar para o passo anterior
+        }
+      } else {
+        // Para outros planos, simular o fluxo para demonstração
+        // Em uma implementação real, adicionaríamos a integração com o gateway de pagamento
+        const demoResult = createDemoResult();
+        
+        // Simulação de configuração de email para o plano de domínio
+        if (selectedPlan === 'DOMAIN_REGISTRATION') {
+          setIsSettingUpEmails(true);
+          try {
+            const emailResult = await forceZohoDemo(
+              customDomain,
+              siteData.email || 'admin@example.com'
+            );
+            
+            setEmailSetupResult(emailResult);
+            demoResult.emailSetup = emailResult;
+          } catch (error) {
+            console.error('Erro na configuração de email:', error);
+            demoResult.emailError = error.message;
+          } finally {
+            setIsSettingUpEmails(false);
+          }
+        }
+        
+        // Definir resultado e avançar para o passo final
+        setPublishResult(demoResult);
+        setPublishStep(4);
+        
+        if (onPublishSuccess) {
+          onPublishSuccess(demoResult);
         }
       }
-      
-      // Definir resultado e avançar para o passo final
-      setPublishResult(demoResult);
-      setPublishStep(4);
-      
-      if (onPublishSuccess) {
-        onPublishSuccess(demoResult);
-      }
-      
     } catch (error) {
-      console.error('Erro na publicação:', error);
+      console.error('Erro geral na publicação:', error);
       setPaymentError(`Erro ao publicar: ${error.message}`);
+      setPublishStep(2); // Voltar para o passo anterior
     } finally {
       setIsPublishing(false);
-      setIsSettingUpEmails(false);
     }
   };
   
@@ -409,50 +439,56 @@ function PublishSiteModal({
           {/* Passo 2: Pagamento (para planos pagos) */}
           {!showTokenInput && publishStep === 2 && (
             <div className="payment-section">
-              <h3>Pagamento</h3>
-              
-              {selectedPlan !== 'BASIC' ? (
-                <div className="payment-summary">
-                  <h4>Resumo do pedido</h4>
-                  <div className="payment-details">
-                    <p><strong>Plano:</strong> {PUBLISHING_PLANS[selectedPlan].name}</p>
-                    <p><strong>Valor:</strong> R$ {(PUBLISHING_PLANS[selectedPlan].price / 100).toFixed(2)}</p>
-                    {customDomain && <p><strong>Domínio:</strong> {customDomain}</p>}
-                    {testingMode && <p className="testing-mode-tag">MODO DE TESTE ATIVADO</p>}
-                  </div>
-                  
-                  <p className="payment-notice">
-                    {testingMode 
-                      ? "Modo de teste ativado. O fluxo completo será simulado sem pagamento real."
-                      : "Estamos simulando o pagamento. Clique em \"Publicar\" para continuar sem pagamento real."}
-                  </p>
+            <h3 className="publish-step-title">Pagamento</h3>
+            
+            {selectedPlan !== 'BASIC' ? (
+              <div className="payment-summary">
+                <h4>Resumo do pedido</h4>
+                <div className="payment-details">
+                  <p><strong>Plano:</strong> {PUBLISHING_PLANS[selectedPlan].name}</p>
+                  <p><strong>Valor:</strong> R$ {(PUBLISHING_PLANS[selectedPlan].price / 100).toFixed(2)}</p>
+                  {customDomain && <p><strong>Domínio:</strong> {customDomain}</p>}
+                  {testingMode && <div className="testing-mode-tag">MODO DE TESTE ATIVADO</div>}
                 </div>
-              ) : (
-                <div className="free-plan-notice">
-                  <p>Você selecionou o plano gratuito. Não é necessário pagamento.</p>
-                </div>
-              )}
-              
-              {paymentError && <p className="error-message">{paymentError}</p>}
-              
-              <div className="modal-actions">
-                <button 
-                  className="secondary-button" 
-                  onClick={() => setPublishStep(1)}
-                  disabled={isPublishing}
-                >
-                  Voltar
-                </button>
                 
-                <button 
-                  className="primary-button" 
-                  onClick={handlePublish}
-                  disabled={isPublishing}
-                >
-                  {isPublishing ? 'Processando...' : 'Publicar Agora'}
-                </button>
+                <div className="payment-notice">
+                  {testingMode 
+                    ? "Modo de teste ativado. O fluxo completo será simulado sem pagamento real."
+                    : "Estamos simulando o pagamento. Clique em \"Publicar\" para continuar sem pagamento real."}
+                </div>
               </div>
+            ) : (
+              <div className="free-plan-notice">
+                <div className="success-icon">✓</div>
+                <p>Você selecionou o plano gratuito. Não é necessário pagamento.</p>
+              </div>
+            )}
+            
+            {paymentError && (
+              <div className="error-message">
+                <div className="error-icon">!</div>
+                <p>{paymentError}</p>
+              </div>
+            )}
+            
+            <div className="modal-actions">
+              <button 
+                className="secondary-button" 
+                onClick={() => setPublishStep(1)}
+                disabled={isPublishing}
+              >
+                Voltar
+              </button>
+              
+              <button 
+                className="primary-button" 
+                onClick={handlePublish}
+                disabled={isPublishing}
+              >
+                {isPublishing ? 'Processando...' : 'Publicar Agora'}
+              </button>
             </div>
+          </div>
           )}
           
           {/* Passo 3: Publicação em andamento */}

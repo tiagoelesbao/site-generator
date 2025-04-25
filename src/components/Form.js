@@ -194,6 +194,7 @@ function Form({ formData, onInputChange, onImageUpload, disabled = false }) {
             disabled={disabled}
           />
           
+
           <div className="form-field file-upload-field">
             <label>Imagem de Fundo</label>
             <div className="file-upload-container">
@@ -201,17 +202,25 @@ function Form({ formData, onInputChange, onImageUpload, disabled = false }) {
                 type="file"
                 id="hero-image"
                 accept="image/*"
-                onChange={onImageUpload}
+                onChange={(e) => {
+                  onImageUpload(e);
+                  // Mostrar nome do arquivo selecionado
+                  const fileName = e.target.files[0]?.name || "Nenhum arquivo selecionado";
+                  document.getElementById("file-name-display").textContent = fileName;
+                }}
                 disabled={disabled}
                 className="file-input"
               />
               <label htmlFor="hero-image" className="file-upload-label">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{marginRight: "12px"}}>
                   <path d="M3 16V17C3 18.6569 4.34315 20 6 20H18C19.6569 20 21 18.6569 21 17V16" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                   <path d="M12 3V16M12 3L7 8M12 3L17 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
                 Escolher arquivo
               </label>
+              <div id="file-name-display" className="file-name-display">
+                Nenhum arquivo selecionado
+              </div>
             </div>
             <p className="field-tip">Recomendado: 1920x1080px ou maior</p>
           </div>
