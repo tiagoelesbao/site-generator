@@ -1,1048 +1,816 @@
 /* src/styles/premium-theme.css */
 :root {
-    /* Core Colors - Monochromatic Scheme */
-    --color-black: #0C0C0E;
-    --color-dark-gray: #1A1A1E;
-    --color-mid-gray: #2A2A30;
-    --color-light-gray: #9090A0;
-    --color-silver: #C0C0C8;
-    --color-white: #F0F0F5;
-    
-    /* Accent Colors (minimal usage) */
-    --color-accent-blue: rgba(200, 230, 255, 0.8);
-    --color-accent-teal: rgba(200, 255, 240, 0.8);
-    
-    /* UI Elements */
-    --color-primary: var(--color-white);
-    --color-secondary: var(--color-silver);
-    --color-background: var(--color-black);
-    --color-card-bg: var(--color-dark-gray);
-    --color-border: rgba(255, 255, 255, 0.08);
-    --color-success: rgba(200, 255, 220, 0.9);
-    --color-error: rgba(255, 200, 200, 0.9);
-    
-    /* Effects */
-    --glow-subtle: 0 0 15px rgba(255, 255, 255, 0.1);
-    --glow-medium: 0 0 20px rgba(255, 255, 255, 0.15);
-    --glow-strong: 0 0 30px rgba(255, 255, 255, 0.2);
-    --diamond-reflection: linear-gradient(135deg, transparent 20%, rgba(255, 255, 255, 0.25) 45%, rgba(255, 255, 255, 0.5) 50%, rgba(255, 255, 255, 0.25) 55%, transparent 80%);
-    
-    /* Dimensions & Typography */
-    --border-radius-sm: 6px;
-    --border-radius-md: 10px;
-    --border-radius-lg: 16px;
-    --spacing-xs: 0.5rem;
-    --spacing-sm: 1rem;
-    --spacing-md: 1.5rem;
-    --spacing-lg: 2.5rem;
-    --spacing-xl: 4rem;
-    --font-family-main: 'Inter', 'Roboto', sans-serif;
-    --font-family-heading: 'SF Pro Display', 'Inter', sans-serif;
-    --transition-fast: 0.2s ease;
-    --transition-medium: 0.4s ease;
-    --transition-slow: 0.6s ease;
-  }
+  /* Core Colors - Monochromatic Scheme */
+  --color-black: #0C0C0E;
+  --color-dark-gray: #1A1A1E;
+  --color-mid-gray: #2A2A30;
+  --color-light-gray: #9090A0;
+  --color-silver: #C0C0C8;
+  --color-white: #F0F0F5;
   
-  /* Base Styles */
-  *, *::before, *::after {
-    box-sizing: border-box;
-  }
+  /* Accent Colors (minimal usage) */
+  --color-accent-blue: rgba(200, 230, 255, 0.8);
+  --color-accent-teal: rgba(200, 255, 240, 0.8);
   
-  body {
-    margin: 0;
-    padding: 0;
-    background-color: var(--color-background);
-    color: var(--color-primary);
-    font-family: var(--font-family-main);
-    min-height: 100vh;
-    overflow-x: hidden;
-    position: relative;
-    background-image: radial-gradient(circle at 15% 50%, rgba(255, 255, 255, 0.015) 0%, transparent 50%),
-                      radial-gradient(circle at 85% 30%, rgba(255, 255, 255, 0.01) 0%, transparent 50%);
-  }
+  /* UI Elements */
+  --color-primary: var(--color-white);
+  --color-secondary: var(--color-silver);
+  --color-background: var(--color-black);
+  --color-card-bg: var(--color-dark-gray);
+  --color-border: rgba(255, 255, 255, 0.08);
+  --color-success: rgba(200, 255, 220, 0.9);
+  --color-error: rgba(255, 200, 200, 0.9);
   
-  /* Efeito de brilho premium no overlay */
-  .glowing-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    pointer-events: none;
-    background: radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.03), transparent 70%);
-    z-index: -1;
-  }
+  /* Effects */
+  --glow-subtle: 0 0 15px rgba(255, 255, 255, 0.1);
+  --glow-medium: 0 0 20px rgba(255, 255, 255, 0.15);
+  --glow-strong: 0 0 30px rgba(255, 255, 255, 0.2);
+  --diamond-reflection: linear-gradient(135deg, transparent 20%, rgba(255, 255, 255, 0.25) 45%, rgba(255, 255, 255, 0.5) 50%, rgba(255, 255, 255, 0.25) 55%, transparent 80%);
   
-  /* Canvas de partículas */
-  .particles-canvas {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: -2;
-    pointer-events: none;
-  }
-  
-  /* Animações para elementos fade-in */
-  .fade-in {
-    opacity: 0;
-    transform: translateY(20px);
-    transition: opacity 0.7s ease, transform 0.7s ease;
-  }
-  
-  .fade-in.visible {
+  /* Dimensions & Typography */
+  --border-radius-sm: 6px;
+  --border-radius-md: 10px;
+  --border-radius-lg: 16px;
+  --spacing-xs: 0.5rem;
+  --spacing-sm: 1rem;
+  --spacing-md: 1.5rem;
+  --spacing-lg: 2.5rem;
+  --spacing-xl: 4rem;
+  --font-family-main: 'Inter', 'Roboto', sans-serif;
+  --font-family-heading: 'SF Pro Display', 'Inter', sans-serif;
+  --transition-fast: 0.2s ease;
+  --transition-medium: 0.4s ease;
+  --transition-slow: 0.6s ease;
+}
+
+/* Base Styles */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--color-background);
+  color: var(--color-primary);
+  font-family: var(--font-family-main);
+  min-height: 100vh;
+  overflow-x: hidden;
+  position: relative;
+  background-image: radial-gradient(circle at 15% 50%, rgba(255, 255, 255, 0.015) 0%, transparent 50%),
+                    radial-gradient(circle at 85% 30%, rgba(255, 255, 255, 0.01) 0%, transparent 50%);
+}
+
+/* Correção: Backup de pontos para quando a animação principal falhar - CORRIGIDO PARA BRANCO */
+body::after {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: -3;
+  background-image: 
+    radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.1) 1px, transparent 1px),
+    radial-gradient(circle at 40% 60%, rgba(255, 255, 255, 0.1) 1px, transparent 1px),
+    radial-gradient(circle at 60% 30%, rgba(255, 255, 255, 0.1) 1px, transparent 1px),
+    radial-gradient(circle at 80% 70%, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+  background-size: 20% 20%;
+  animation: float-particles 15s infinite ease-in-out;
+}
+
+/* Efeito de brilho premium no overlay */
+.glowing-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  background: radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.03), transparent 70%);
+  z-index: -1;
+}
+
+/* Correção: Canvas de partículas */
+.particles-canvas {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  z-index: -2 !important;
+  pointer-events: none !important;
+  opacity: 0.8 !important;
+}
+
+/* Correção: Criar animação básica de partículas como fallback */
+@keyframes float-particles {
+  0% { transform: translateY(0) translateX(0); }
+  25% { transform: translateY(-10px) translateX(5px); }
+  50% { transform: translateY(0) translateX(10px); }
+  75% { transform: translateY(10px) translateX(5px); }
+  100% { transform: translateY(0) translateX(0); }
+}
+
+/* Correção: Ajuste para animações fade-in */
+.fade-in {
+  opacity: 0.95 !important; /* Quase completamente visível mesmo sem JS */
+  transform: translateY(5px) !important; /* Efeito sutil mesmo sem JS */
+  transition: opacity 0.7s ease, transform 0.7s ease;
+  animation: force-visibility 0.5s forwards 0.5s;
+}
+
+@keyframes force-visibility {
+  to {
     opacity: 1;
     transform: translateY(0);
   }
-  
-  /* Layout Principal */
-  .app-container {
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh;
-  }
-  
-  .app-header {
-    text-align: center;
-    padding: var(--spacing-lg) var(--spacing-md);
-    position: relative;
-  }
-  
-  .app-title {
-    font-family: var(--font-family-heading);
-    font-size: 2.8rem;
-    font-weight: 700;
-    letter-spacing: -0.5px;
-    margin-bottom: var(--spacing-xs);
-    position: relative;
-    color: var(--color-white);
-    background: var(--diamond-reflection);
-    -webkit-background-clip: text;
-    background-clip: text;
-    text-shadow: var(--glow-subtle);
-  }
-  
-  .app-subtitle {
-    color: var(--color-secondary);
-    font-size: 1.2rem;
-    font-weight: 300;
-    margin: 0;
-  }
-  
-  /* Logo Estilizado */
-  .site-logo {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: var(--spacing-xs);
-    margin-bottom: var(--spacing-sm);
-  }
-  
-  .logo-text {
-    font-family: var(--font-family-heading);
-    font-size: 1.8rem;
-    font-weight: 700;
-    letter-spacing: -0.5px;
-    color: var(--color-white);
-  }
-  
-  .logo-accent {
-    color: var(--color-accent-blue);
-    position: relative;
-  }
-  
-  .logo-accent::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: var(--diamond-reflection);
-    opacity: 0.5;
-    mix-blend-mode: overlay;
-    animation: shine 3s infinite;
-  }
-  
-  @keyframes shine {
-    0% { transform: translateX(-100%); }
-    20%, 100% { transform: translateX(100%); }
-  }
-  
-  /* Conteúdo Principal */
-  .app-main {
-    flex: 1;
-    width: 90%;
-    max-width: 1100px;
-    margin: 0 auto;
-    padding: var(--spacing-md) 0 var(--spacing-xl);
-    position: relative;
-  }
-  
-  /* Formulário & Cards */
-  .form-wrapper {
-    margin-bottom: var(--spacing-lg);
-  }
-  
-  .form-container {
-    background: var(--color-card-bg);
-    border-radius: var(--border-radius-lg);
-    box-shadow: var(--glow-subtle);
-    border: 1px solid var(--color-border);
-    padding: var(--spacing-lg);
-    position: relative;
-    overflow: hidden;
-  }
-  
-  .form-container::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 1px;
-    background: linear-gradient(to right, transparent, var(--color-silver), transparent);
-    opacity: 0.3;
-  }
-  
-  .form-container h2 {
-    margin-top: 0;
-    margin-bottom: var(--spacing-md);
-    color: var(--color-white);
-    font-family: var(--font-family-heading);
-    font-weight: 600;
-    position: relative;
-    display: inline-block;
-  }
-  
-  .form-container h2::after {
-    content: '';
-    position: absolute;
-    bottom: -8px;
-    left: 0;
-    width: 40px;
-    height: 2px;
-    background: var(--color-accent-blue);
-    border-radius: 2px;
-  }
-  
-  /* Abas/Tabs do Formulário */
-  .form-tabs {
-    display: flex;
-    margin-bottom: var(--spacing-md);
-    overflow-x: auto;
-    scrollbar-width: thin;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-    padding-bottom: 2px;
-  }
-  
-  .form-tab {
-    padding: var(--spacing-sm) var(--spacing-md);
-    background: none;
-    border: none;
-    font-family: var(--font-family-main);
-    border-bottom: 2px solid transparent;
-    font-weight: 500;
-    color: var(--color-light-gray);
-    cursor: pointer;
-    transition: all var(--transition-fast);
-    white-space: nowrap;
-    position: relative;
-  }
-  
-  .form-tab:hover {
-    color: var(--color-silver);
-  }
-  
-  .form-tab.active {
-    color: var(--color-white);
-    border-bottom-color: var(--color-accent-blue);
-  }
-  
-  .form-tab.active::before {
-    content: '';
-    position: absolute;
-    bottom: -2px;
-    left: 0;
-    right: 0;
-    height: 2px;
-    background: var(--color-accent-blue);
-    box-shadow: 0 0 8px var(--color-accent-blue);
-  }
-  
-  /* Campos do Formulário */
-  .form-field {
-    margin-bottom: var(--spacing-md);
-  }
-  
-  .form-field label {
-    display: block;
-    margin-bottom: 6px;
-    font-weight: 500;
-    color: var(--color-silver);
-    font-size: 0.95rem;
-  }
-  
-  .field-input, 
-  input[type="text"], 
-  input[type="email"], 
-  input[type="file"], 
-  textarea, 
-  select {
-    width: 100%;
-    padding: 12px 14px;
-    background-color: rgba(0, 0, 0, 0.2);
-    border: 1px solid var(--color-border);
-    border-radius: var(--border-radius-sm);
-    color: var(--color-white);
-    font-family: var(--font-family-main);
-    font-size: 0.95rem;
-    transition: all var(--transition-fast);
-  }
-  
-  .field-input:focus, 
-  input:focus, 
-  textarea:focus, 
-  select:focus {
-    outline: none;
-    border-color: rgba(255, 255, 255, 0.2);
-    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.1), var(--glow-subtle);
-  }
-  
-  .textarea {
-    min-height: 120px;
-    resize: vertical;
-  }
-  
-  /* Grupos de serviços */
-  .service-group {
-    margin-bottom: var(--spacing-md);
-    padding: var(--spacing-md);
-    background-color: rgba(255, 255, 255, 0.03);
-    border-radius: var(--border-radius-md);
-    border: 1px solid var(--color-border);
-    position: relative;
-    overflow: hidden;
-  }
-  
-  .service-group::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 3px;
-    height: 100%;
-    background: linear-gradient(to bottom, var(--color-accent-blue), rgba(255, 255, 255, 0.1));
-  }
-  
-  .service-group h4 {
-    margin-top: 0;
-    margin-bottom: var(--spacing-sm);
-    color: var(--color-white);
-    font-size: 1.1rem;
-  }
-  
-  /* Botões de ação */
-  .action-buttons {
-    display: flex;
-    gap: var(--spacing-md);
-    margin-top: var(--spacing-lg);
-  }
-  
-  .download-button, 
-  .publish-button, 
-  button:not(.form-tab):not(.close-error-button) {
-    padding: 14px 24px;
-    border: none;
-    border-radius: var(--border-radius-sm);
-    font-family: var(--font-family-main);
-    font-size: 1rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all var(--transition-fast);
-    position: relative;
-    overflow: hidden;
-    text-align: center;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-  }
-  
-  .download-button, 
-  .primary-button {
-    background-color: rgba(255, 255, 255, 0.08);
-    color: var(--color-white);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-  }
-  
-  .publish-button, 
-  .secondary-button {
-    background-color: rgba(0, 0, 0, 0.3);
-    color: var(--color-silver);
-    border: 1px solid rgba(255, 255, 255, 0.05);
-  }
-  
-  .download-button:hover, 
-  .primary-button:hover {
-    background-color: rgba(255, 255, 255, 0.12);
-    transform: translateY(-2px);
-    box-shadow: var(--glow-medium);
-    border-color: rgba(255, 255, 255, 0.15);
-  }
-  
-  .publish-button:hover, 
-  .secondary-button:hover {
-    background-color: rgba(0, 0, 0, 0.4);
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-    color: var(--color-white);
-  }
-  
-  /* Efeito de brilho nos botões */
-  .download-button::after, 
-  .publish-button::after, 
-  .primary-button::after, 
-  .secondary-button::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: var(--diamond-reflection);
-    opacity: 0.5;
-    transition: 0.5s;
-  }
-  
-  .download-button:hover::after, 
-  .publish-button:hover::after, 
-  .primary-button:hover::after, 
-  .secondary-button:hover::after {
-    left: 100%;
-  }
-  
-  /* Mensagens de sucesso e erro */
-  .success-message, 
-  .error-message {
-    display: flex;
-    align-items: center;
-    padding: var(--spacing-md);
-    margin-top: var(--spacing-md);
-    border-radius: var(--border-radius-md);
-    background-color: rgba(0, 0, 0, 0.2);
-    border: 1px solid var(--color-border);
-    position: relative;
-    overflow: hidden;
-  }
-  
-  .success-message {
-    border-left: 3px solid var(--color-success);
-  }
-  
-  .success-message.published {
-    border-left: 3px solid var(--color-accent-blue);
-  }
-  
-  .error-message {
-    border-left: 3px solid var(--color-error);
-  }
-  
-  .success-icon, 
-  .error-icon {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-    margin-right: var(--spacing-sm);
-    font-weight: bold;
-    flex-shrink: 0;
-  }
-  
-  .success-icon {
-    background: var(--color-success);
-    color: rgba(0, 0, 0, 0.8);
-    box-shadow: 0 0 10px rgba(200, 255, 220, 0.3);
-  }
-  
-  .error-icon {
-    background: var(--color-error);
-    color: rgba(0, 0, 0, 0.8);
-    box-shadow: 0 0 10px rgba(255, 200, 200, 0.3);
-  }
-  
-  .site-url-wrapper {
-    margin-left: var(--spacing-xs);
-  }
-  
-  .site-url {
-    color: var(--color-accent-blue);
-    text-decoration: none;
-    border-bottom: 1px dashed rgba(200, 230, 255, 0.5);
-    padding-bottom: 2px;
-    transition: border-color var(--transition-fast);
-    font-weight: 500;
-  }
-  
-  .site-url:hover {
-    border-bottom: 1px solid var(--color-accent-blue);
-  }
-  
-  /* Rodapé */
-  .app-footer {
-    padding: var(--spacing-md) 0;
-    text-align: center;
-    color: var(--color-light-gray);
-    font-size: 0.9rem;
-    position: relative;
-  }
-  
-  .footer-content {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: var(--spacing-xs);
-  }
-  
-  .diamond-separator {
-    position: relative;
-    width: 100px;
-    height: 1px;
-    background: linear-gradient(to right, transparent, var(--color-light-gray), transparent);
-    margin: var(--spacing-xs) 0;
-  }
-  
-  .diamond-separator::before {
-    content: '◆';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    font-size: 10px;
-    color: var(--color-silver);
-  }
-  
-  /* PublishSite Modal */
-  .modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(0, 0, 0, 0.8);
-    backdrop-filter: blur(5px);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 2000; /* Corrigido: era 000 */
-    padding: 1; /* Removido padding que poderia descentralizar */
-  }
-  
-  .publish-modal {
-    background-color: var(--color-dark-gray);
-    color: var(--color-white);
-    border-radius: var(--border-radius-lg);
-    width: 90%;
-    max-width: 900px;
-    max-height: 85vh;
-    margin: 0 auto; /* Centralização horizontal explícita */
-    overflow-y: auto;
-    box-shadow: var(--glow-medium);
-    border: 1px solid var(--color-border);
-    position: relative;
-    z-index: 2001; /* Adicionado z-index para garantir que fique acima da overlay */
-    animation: modal-appear 0.4s ease;
-    transform: translateY(0); /* Garantir posição vertical correta */
-  }
-  
-  /* Animação refinada para evitar deslocamento */
-  @keyframes modal-appear {
-    from { 
-      opacity: 0; 
-      transform: scale(0.95) translateY(10px); 
-    }
-    to { 
-      opacity: 1; 
-      transform: scale(1) translateY(0); 
-    }
-  }
-  
-  .modal-header {
-    position: sticky; /* Manter cabeçalho visível ao rolar */
-    top: 0;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: var(--spacing-md);
-    border-bottom: 1px solid var(--color-border);
-    background-color: var(--color-dark-gray); /* Garantir que o fundo seja opaco */
-    z-index: 10;
-  }
-  
-  .modal-header h2 {
-    margin: 0;
-    color: var(--color-white);
-    font-family: var(--font-family-heading);
-    font-weight: 600;
-    position: relative;
-  }
-  
-  .close-button {
-    background: none;
-    border: none;
-    font-size: 24px;
-    cursor: pointer;
-    color: var(--color-light-gray);
-    transition: color var(--transition-fast);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  
-  .close-button:hover {
-    color: var(--color-white);
-  }
-  
-  .modal-content {
-    padding: var(--spacing-lg);
-    overflow-x: hidden; /* Evitar rolagem horizontal */
-  }
-  
-  /* Planos */
-  .plan-selection h3 {
-    margin-bottom: var(--spacing-lg);
-    text-align: center;
-    color: var(--color-white);
-    font-family: var(--font-family-heading);
-  }
-  
-  .plans-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: var(--spacing-md);
-    margin: var(--spacing-lg) 0;
-  }
-  
-  .plan-card {
-    position: relative;
-    cursor: pointer;
-    height: 100%;
-    perspective: 1000px;
-    transition: transform var(--transition-medium);
-  }
-  
-  .plan-card-inner {
-    background: rgba(0, 0, 0, 0.2);
-    border-radius: var(--border-radius-md);
-    padding: var(--spacing-md);
-    height: 100%;
-    border: 1px solid var(--color-border);
-    transition: all var(--transition-medium);
-    display: flex;
-    flex-direction: column;
-  }
-  
-  .plan-card:hover .plan-card-inner {
-    box-shadow: var(--glow-subtle);
-    transform: translateY(-5px);
-    border-color: rgba(255, 255, 255, 0.15);
-  }
-  
-  .plan-card.selected .plan-card-inner {
-    border: 1px solid rgba(255, 255, 255, 0.25);
-    background: linear-gradient(to bottom, rgba(255, 255, 255, 0.05), rgba(0, 0, 0, 0.2));
-    box-shadow: var(--glow-medium);
-  }
-  
-  .plan-icon {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.05);
-    margin: 0 auto var(--spacing-md);
-    color: var(--color-white);
-    font-size: 28px;
-    position: relative;
-    overflow: hidden;
-  }
-  
-  .plan-icon::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: var(--diamond-reflection);
-    opacity: 0.3;
-    animation: rotate 6s linear infinite;
-  }
-  
-  @keyframes rotate {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
-  }
-  
-  .plan-header {
-    text-align: center;
-    margin-bottom: var(--spacing-md);
-  }
-  
-  .plan-header h4 {
-    font-size: 1.4rem;
-    margin-bottom: 8px;
-    color: var(--color-white);
-    font-family: var(--font-family-heading);
-  }
-  
-  .plan-price {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: var(--color-accent-teal);
-    text-shadow: 0 0 10px rgba(200, 255, 240, 0.3);
-  }
-  
-  .free-tag {
-    display: inline-block;
-    background: linear-gradient(135deg, rgba(200, 255, 240, 0.8), rgba(200, 230, 255, 0.8));
-    padding: 4px 12px;
-    border-radius: 20px;
-    font-size: 0.9rem;
-    color: rgba(0, 0, 0, 0.8);
-    font-weight: 600;
-  }
-  
-  /* Responsividade */
-  @media (max-width: 768px) {
-    .plans-grid {
-      grid-template-columns: 1fr;
-    }
-    
-    .app-main {
-      width: 95%;
-      padding: var(--spacing-sm) 0 var(--spacing-lg);
-    }
-    
-    .action-buttons {
-      flex-direction: column;
-    }
-    
-    .plan-card-inner {
-      padding: var(--spacing-sm);
-    }
-    
-    .plan-price {
-      font-size: 1.3rem;
-    }
-    
-    .form-container {
-      padding: var(--spacing-md);
-    }
-  }
-  
-  @media (max-width: 480px) {
-    .app-title {
-      font-size: 1.8rem;
-    }
-    
-    .app-subtitle {
-      font-size: 1rem;
-    }
-    
-    .logo-text {
-      font-size: 1.6rem;
-    }
-    
-    .form-tabs {
-      flex-wrap: wrap;
-      justify-content: center;
-    }
-  }
-
-  /* Adicionar ao premium-theme.css */
-
-/* Estilos de formulário aprimorados */
-.section-header {
-    display: flex;
-    align-items: center;
-    margin-bottom: var(--spacing-md);
-  }
-  
-  .section-header h3 {
-    margin: 0;
-    font-family: var(--font-family-heading);
-    font-weight: 600;
-    color: var(--color-white);
-    flex-shrink: 0;
-  }
-  
-  .section-line {
-    flex-grow: 1;
-    height: 1px;
-    background: linear-gradient(to right, rgba(255, 255, 255, 0.1), transparent);
-    margin-left: var(--spacing-sm);
-  }
-  
-  .form-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: var(--spacing-md);
-  }
-  
-  .section-icon {
-    margin-right: 8px;
-    vertical-align: text-bottom;
-  }
-  
-  /* Serviços */
-  .service-header {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-xs);
-    margin-bottom: var(--spacing-xs);
-  }
-  
-  .service-number {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 25px;
-    height: 25px;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.1);
-    font-size: 0.9rem;
-    font-weight: 600;
-    color: var(--color-white);
-  }
-  
-  /* Upload de arquivo customizado */
-  .file-upload-field {
-    margin-bottom: var(--spacing-md);
-  }
-  
-  .file-upload-container {
-    position: relative;
-    margin-bottom: var(--spacing-xs);
-  }
-  
-  .file-input {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    margin: -1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    border: 0;
-  }
-  
-  .file-upload-label {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 10px 16px;
-    background-color: rgba(255, 255, 255, 0.05);
-    border: 1px dashed var(--color-border);
-    border-radius: var(--border-radius-sm);
-    color: var(--color-silver);
-    cursor: pointer;
-    transition: all var(--transition-fast);
-  }
-  
-  .file-upload-label:hover {
-    background-color: rgba(255, 255, 255, 0.08);
-    color: var(--color-white);
-    border-color: rgba(255, 255, 255, 0.2);
-  }
-  
-  /* Botões de navegação no formulário */
-  .section-navigation {
-    display: flex;
-    justify-content: space-between;
-    margin-top: var(--spacing-lg);
-  }
-  
-  .next-button, 
-  .prev-button, 
-  .complete-button {
-    display: inline-flex;
-    align-items: center;
-    padding: 10px 18px;
-    border: none;
-    border-radius: var(--border-radius-sm);
-    font-family: var(--font-family-main);
-    font-size: 0.95rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all var(--transition-fast);
-  }
-  
-  .next-button {
-    background-color: rgba(255, 255, 255, 0.05);
-    color: var(--color-white);
-    margin-left: auto;
-  }
-  
-  .next-button:hover {
-    background-color: rgba(255, 255, 255, 0.1);
-    transform: translateX(2px);
-  }
-  
-  .prev-button {
-    background-color: transparent;
-    color: var(--color-silver);
-    border: 1px solid rgba(255, 255, 255, 0.05);
-  }
-  
-  .prev-button:hover {
-    background-color: rgba(255, 255, 255, 0.03);
-    color: var(--color-white);
-    transform: translateX(-2px);
-  }
-  
-  .complete-button {
-    background-color: rgba(255, 255, 255, 0.08);
-    color: var(--color-white);
-    margin-left: auto;
-    position: relative;
-    overflow: hidden;
-  }
-  
-  .complete-button::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: var(--diamond-reflection);
-    opacity: 0.5;
-    transition: 0.5s;
-  }
-  
-  .complete-button:hover {
-    background-color: rgba(255, 255, 255, 0.12);
-    transform: translateY(-2px);
-  }
-  
-  .complete-button:hover::after {
-    left: 100%;
-  }
-  
-  .button-icon {
-    display: inline-block;
-    transition: transform var(--transition-fast);
-  }
-  
-  .next-button:hover .button-icon {
-    transform: translateX(3px);
-  }
-  
-  .prev-button:hover .button-icon {
-    transform: translateX(-3px);
-  }
-  
-  /* Loader aprimorado */
-  .loader {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 60px;
-    height: 60px;
-    margin: 0 auto var(--spacing-md);
-    position: relative;
-  }
-  
-  .loader-inner {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    border: 2px solid transparent;
-    border-top-color: var(--color-white);
-    border-right-color: var(--color-white);
-    animation: spin 1s linear infinite;
-  }
-  
-  .loader::after {
-    content: '';
-    position: absolute;
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    border: 2px dashed rgba(255, 255, 255, 0.2);
-  }
-  
-  @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-  }
-
-  .publish-step-title {
-    margin-bottom: var(--spacing-lg);
-    text-align: center;
-    color: var(--color-white);
-    font-family: var(--font-family-heading);
-    font-size: 1.5rem;
-  }
-
-  /* Ajustes para melhorar espaçamentos e alinhamentos */
-.modal-content {
-  padding: var(--spacing-lg);
 }
 
-/* Botões mais destacados e corrigidos */
-.primary-button, 
-.secondary-button {
-  min-width: 120px;
-  padding: 14px 24px;
-  border-radius: var(--border-radius-sm);
+.fade-in.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Layout Principal */
+.app-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.app-header {
+  text-align: center;
+  padding: var(--spacing-lg) var(--spacing-md);
+  position: relative;
+}
+
+.app-title {
+  font-family: var(--font-family-heading);
+  font-size: 2.8rem;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  margin-bottom: var(--spacing-xs);
+  position: relative;
+  color: var(--color-white);
+  background: var(--diamond-reflection);
+  -webkit-background-clip: text;
+  background-clip: text;
+  text-shadow: var(--glow-subtle);
+}
+
+.app-subtitle {
+  color: var(--color-secondary);
+  font-size: 1.2rem;
+  font-weight: 300;
+  margin: 0;
+}
+
+/* Logo Estilizado */
+.site-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-xs);
+  margin-bottom: var(--spacing-sm);
+}
+
+.logo-text {
+  font-family: var(--font-family-heading);
+  font-size: 1.8rem;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  color: var(--color-white);
+}
+
+.logo-accent {
+  color: var(--color-accent-blue);
+  position: relative;
+}
+
+.logo-accent::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--diamond-reflection);
+  opacity: 0.5;
+  mix-blend-mode: overlay;
+  animation: shine 3s infinite;
+}
+
+@keyframes shine {
+  0% { transform: translateX(-100%); }
+  20%, 100% { transform: translateX(100%); }
+}
+
+/* Conteúdo Principal */
+.app-main {
+  flex: 1;
+  width: 90%;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: var(--spacing-md) 0 var(--spacing-xl);
+  position: relative;
+}
+
+/* Formulário & Cards */
+.form-wrapper {
+  margin-bottom: var(--spacing-lg);
+}
+
+.form-container {
+  background: var(--color-card-bg);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--glow-subtle);
+  border: 1px solid var(--color-border);
+  padding: var(--spacing-lg);
+  position: relative;
+  overflow: hidden;
+}
+
+.form-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--color-silver), transparent);
+  opacity: 0.3;
+}
+
+.form-container h2 {
+  margin-top: 0;
+  margin-bottom: var(--spacing-md);
+  color: var(--color-white);
+  font-family: var(--font-family-heading);
   font-weight: 600;
-  cursor: pointer !important; /* Forçar cursor pointer para garantir interatividade */
+  position: relative;
+  display: inline-block;
+}
+
+.form-container h2::after {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  left: 0;
+  width: 40px;
+  height: 2px;
+  background: var(--color-accent-blue);
+  border-radius: 2px;
+}
+
+/* Abas/Tabs do Formulário */
+.form-tabs {
+  display: flex;
+  margin-bottom: var(--spacing-md);
+  overflow-x: auto;
+  scrollbar-width: thin;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  padding-bottom: 2px;
+}
+
+.form-tab {
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: none;
+  border: none;
+  font-family: var(--font-family-main);
+  border-bottom: 2px solid transparent;
+  font-weight: 500;
+  color: var(--color-light-gray);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+  position: relative;
+}
+
+.form-tab:hover {
+  color: var(--color-silver);
+}
+
+.form-tab.active {
+  color: var(--color-white);
+  border-bottom-color: var(--color-accent-blue);
+}
+
+.form-tab.active::before {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--color-accent-blue);
+  box-shadow: 0 0 8px var(--color-accent-blue);
+}
+
+/* Campos do Formulário */
+.form-field {
+  margin-bottom: var(--spacing-md);
+}
+
+.form-field label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 500;
+  color: var(--color-silver);
+  font-size: 0.95rem;
+}
+
+.field-input, 
+input[type="text"], 
+input[type="email"], 
+input[type="file"], 
+textarea, 
+select {
+  width: 100%;
+  padding: 12px 14px;
+  background-color: rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-sm);
+  color: var(--color-white);
+  font-family: var(--font-family-main);
+  font-size: 0.95rem;
+  transition: all var(--transition-fast);
+}
+
+.field-input:focus, 
+input:focus, 
+textarea:focus, 
+select:focus {
+  outline: none;
+  border-color: rgba(255, 255, 255, 0.2);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.1), var(--glow-subtle);
+}
+
+.textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+
+/* Grupos de serviços */
+.service-group {
+  margin-bottom: var(--spacing-md);
+  padding: var(--spacing-md);
+  background-color: rgba(255, 255, 255, 0.03);
+  border-radius: var(--border-radius-md);
+  border: 1px solid var(--color-border);
+  position: relative;
+  overflow: hidden;
+}
+
+.service-group::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 3px;
+  height: 100%;
+  background: linear-gradient(to bottom, var(--color-accent-blue), rgba(255, 255, 255, 0.1));
+}
+
+.service-group h4 {
+  margin-top: 0;
+  margin-bottom: var(--spacing-sm);
+  color: var(--color-white);
+  font-size: 1.1rem;
+}
+
+/* Botões de ação */
+.action-buttons {
+  display: flex;
+  gap: var(--spacing-md);
+  margin-top: var(--spacing-lg);
+}
+
+.download-button, 
+.publish-button, 
+button:not(.form-tab):not(.close-error-button) {
+  padding: 14px 24px;
+  border: none;
+  border-radius: var(--border-radius-sm);
+  font-family: var(--font-family-main);
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
   transition: all var(--transition-fast);
   position: relative;
   overflow: hidden;
+  text-align: center;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  pointer-events: auto !important; /* Garantir que eventos do mouse sejam capturados */
 }
 
-/* Separar os botões adequadamente */
-.modal-actions {
-  display: flex;
-  justify-content: space-between;
-  gap: var(--spacing-md);
-  margin-top: var(--spacing-lg);
-  width: 100%;
+/* Correção: Botões mais destacados e corrigidos */
+.primary-button, 
+.secondary-button {
+  min-width: 120px !important;
+  padding: 14px 24px !important;
+  border-radius: var(--border-radius-sm) !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  pointer-events: auto !important;
+  position: relative !important;
+  z-index: 2500 !important; /* z-index maior que o modal */
 }
 
-/* Feedback visual para uploads */
-.file-name-display {
-  margin-top: 10px;
-  padding: 8px 12px;
-  background-color: rgba(0, 0, 0, 0.2);
-  border-radius: var(--border-radius-sm);
+.download-button, 
+.primary-button {
+  background-color: rgba(255, 255, 255, 0.08);
+  color: var(--color-white);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+.publish-button, 
+.secondary-button {
+  background-color: rgba(0, 0, 0, 0.3);
   color: var(--color-silver);
-  font-size: 0.9rem;
-  border: 1px dashed var(--color-border);
+  border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-.upload-feedback {
-  margin-top: var(--spacing-sm);
-  padding: var(--spacing-xs) var(--spacing-sm);
-  border-radius: var(--border-radius-sm);
-  font-size: 0.9rem;
-  background-color: rgba(255, 255, 255, 0.05);
+.download-button:hover, 
+.primary-button:hover {
+  background-color: rgba(255, 255, 255, 0.12);
+  transform: translateY(-2px);
+  box-shadow: var(--glow-medium);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.publish-button:hover, 
+.secondary-button:hover {
+  background-color: rgba(0, 0, 0, 0.4);
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  color: var(--color-white);
+}
+
+/* Efeito de brilho nos botões */
+.download-button::after, 
+.publish-button::after, 
+.primary-button::after, 
+.secondary-button::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: var(--diamond-reflection);
+  opacity: 0.5;
+  transition: 0.5s;
+}
+
+.download-button:hover::after, 
+.publish-button:hover::after, 
+.primary-button:hover::after, 
+.secondary-button:hover::after {
+  left: 100%;
+}
+
+/* Mensagens de sucesso e erro */
+.success-message, 
+.error-message {
+  display: flex;
+  align-items: center;
+  padding: var(--spacing-md);
+  margin-top: var(--spacing-md);
+  border-radius: var(--border-radius-md);
+  background-color: rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--color-border);
+  position: relative;
+  overflow: hidden;
+}
+
+.success-message {
+  border-left: 3px solid var(--color-success);
+}
+
+.success-message.published {
   border-left: 3px solid var(--color-accent-blue);
 }
 
-/* Estilos para diferentes estados dos planos */
+.error-message {
+  border-left: 3px solid var(--color-error);
+}
+
+.success-icon, 
+.error-icon {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  margin-right: var(--spacing-sm);
+  font-weight: bold;
+  flex-shrink: 0;
+}
+
+.success-icon {
+  background: var(--color-success);
+  color: rgba(0, 0, 0, 0.8);
+  box-shadow: 0 0 10px rgba(200, 255, 220, 0.3);
+}
+
+.error-icon {
+  background: var(--color-error);
+  color: rgba(0, 0, 0, 0.8);
+  box-shadow: 0 0 10px rgba(255, 200, 200, 0.3);
+}
+
+.site-url-wrapper {
+  margin-left: var(--spacing-xs);
+}
+
+.site-url {
+  color: var(--color-accent-blue);
+  text-decoration: none;
+  border-bottom: 1px dashed rgba(200, 230, 255, 0.5);
+  padding-bottom: 2px;
+  transition: border-color var(--transition-fast);
+  font-weight: 500;
+}
+
+.site-url:hover {
+  border-bottom: 1px solid var(--color-accent-blue);
+}
+
+/* Rodapé */
+.app-footer {
+  padding: var(--spacing-md) 0;
+  text-align: center;
+  color: var(--color-light-gray);
+  font-size: 0.9rem;
+  position: relative;
+}
+
+.footer-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.diamond-separator {
+  position: relative;
+  width: 100px;
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--color-light-gray), transparent);
+  margin: var(--spacing-xs) 0;
+}
+
+.diamond-separator::before {
+  content: '◆';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 10px;
+  color: var(--color-silver);
+}
+
+/* Correção: PublishSite Modal melhorado */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.8) !important;
+  backdrop-filter: blur(5px) !important;
+  -webkit-backdrop-filter: blur(5px) !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000 !important;
+  padding: 1; /* Removido padding que poderia descentralizar */
+}
+
+.publish-modal {
+  background-color: var(--color-dark-gray);
+  color: var(--color-white);
+  border-radius: var(--border-radius-lg);
+  width: 90%;
+  max-width: 900px;
+  max-height: 85vh;
+  margin: 0 auto !important; /* Centralização horizontal explícita */
+  overflow-y: auto;
+  box-shadow: var(--glow-medium);
+  border: 1px solid var(--color-border);
+  position: relative;
+  z-index: 2001 !important; /* Adicionado z-index para garantir que fique acima da overlay */
+  animation: modal-appear 0.4s ease;
+  transform: translateY(0) !important; /* Garantir posição vertical correta */
+}
+
+/* Animação refinada para evitar deslocamento */
+@keyframes modal-appear {
+  from { 
+    opacity: 0; 
+    transform: scale(0.95) translateY(10px); 
+  }
+  to { 
+    opacity: 1; 
+    transform: scale(1) translateY(0); 
+  }
+}
+
+.modal-header {
+  position: sticky; /* Manter cabeçalho visível ao rolar */
+  top: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-md);
+  border-bottom: 1px solid var(--color-border);
+  background-color: var(--color-dark-gray); /* Garantir que o fundo seja opaco */
+  z-index: 10;
+}
+
+.modal-header h2 {
+  margin: 0;
+  color: var(--color-white);
+  font-family: var(--font-family-heading);
+  font-weight: 600;
+  position: relative;
+}
+
+.close-button {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: var(--color-light-gray);
+  transition: color var(--transition-fast);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.close-button:hover {
+  color: var(--color-white);
+}
+
+.modal-content {
+  padding: var(--spacing-lg);
+  overflow-x: hidden; /* Evitar rolagem horizontal */
+}
+
+/* Correção: Adicionar espaço para botões no final do modal */
+.modal-content::after {
+  content: '';
+  display: block;
+  margin-top: 30px;
+  height: 50px;
+}
+
+/* Correção: Separar os botões adequadamente e garantir visibilidade */
+.modal-actions {
+  display: flex !important;
+  justify-content: space-between !important;
+  gap: var(--spacing-md) !important;
+  margin-top: var(--spacing-lg) !important;
+  width: 100% !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+/* Correção: Garantir que botões no modal funcionem corretamente */
+.modal-actions button,
+.modal-actions a {
+  pointer-events: auto !important;
+  cursor: pointer !important;
+  user-select: auto !important;
+}
+
+/* Planos */
+.plan-selection h3 {
+  margin-bottom: var(--spacing-lg);
+  text-align: center;
+  color: var(--color-white);
+  font-family: var(--font-family-heading);
+}
+
+.plans-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--spacing-md);
+  margin: var(--spacing-lg) 0;
+}
+
+/* Correção: Melhorias nos cards de planos */
+.plan-card {
+  position: relative !important;
+  cursor: pointer !important;
+  height: 100% !important;
+  perspective: 1000px;
+  transition: transform var(--transition-medium);
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.plan-card-inner {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: var(--border-radius-md);
+  padding: var(--spacing-md);
+  height: 100%;
+  border: 1px solid var(--color-border);
+  transition: all var(--transition-medium);
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: space-between !important;
+}
+
+.plan-card-inner::after {
+  content: '';
+  height: 40px; /* Espaço para o botão */
+}
+
+.plan-card:hover .plan-card-inner {
+  box-shadow: var(--glow-subtle);
+  transform: translateY(-5px);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.plan-card.selected .plan-card-inner {
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.05), rgba(0, 0, 0, 0.2));
+  box-shadow: var(--glow-medium);
+}
+
+.plan-icon {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.05);
+  margin: 0 auto var(--spacing-md);
+  color: var(--color-white);
+  font-size: 28px;
+  position: relative;
+  overflow: hidden;
+}
+
+.plan-icon::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--diamond-reflection);
+  opacity: 0.3;
+  animation: rotate 6s linear infinite;
+}
+
+@keyframes rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.plan-header {
+  text-align: center;
+  margin-bottom: var(--spacing-md);
+}
+
+.plan-header h4 {
+  font-size: 1.4rem;
+  margin-bottom: 8px;
+  color: var(--color-white);
+  font-family: var(--font-family-heading);
+}
+
+.plan-price {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-accent-teal);
+  text-shadow: 0 0 10px rgba(200, 255, 240, 0.3);
+}
+
+.free-tag {
+  display: inline-block;
+  background: linear-gradient(135deg, rgba(200, 255, 240, 0.8), rgba(200, 230, 255, 0.8));
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  color: rgba(0, 0, 0, 0.8);
+  font-weight: 600;
+}
+
+/* Indicador de seleção */
 .plan-card.selected .plan-badge {
   position: absolute;
   top: -10px;
@@ -1059,7 +827,7 @@
   font-weight: bold;
 }
 
-/* Correções para o modal de publicação */
+/* Estilos extras para o modal de planos */
 .free-plan-notice {
   text-align: center;
   padding: 20px;
@@ -1106,15 +874,7 @@
   margin-top: 12px;
 }
 
-/* Garantir que botões no modal funcionem corretamente */
-.modal-actions button,
-.modal-actions a {
-  pointer-events: auto !important;
-  cursor: pointer !important;
-  user-select: auto !important;
-}
-
-/* Centralizar e melhorar visualização da tela de publicação */
+/* Status de publicação */
 .publishing-status {
   text-align: center;
   padding: 40px 20px;
@@ -1128,7 +888,51 @@
   margin: var(--spacing-md) 0;
 }
 
-/* Melhorias na visualização de domínios e DNS */
+/* Loader aprimorado */
+.loader {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 60px;
+  height: 60px;
+  margin: 0 auto var(--spacing-md);
+  position: relative;
+}
+
+.loader-inner {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  border-top-color: var(--color-white);
+  border-right-color: var(--color-white);
+  animation: spin 1s linear infinite;
+}
+
+.loader::after {
+  content: '';
+  position: absolute;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  border: 2px dashed rgba(255, 255, 255, 0.2);
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Estilo para títulos de etapas */
+.publish-step-title {
+  margin-bottom: var(--spacing-lg);
+  text-align: center;
+  color: var(--color-white);
+  font-family: var(--font-family-heading);
+  font-size: 1.5rem;
+}
+
+/* Estilo para informações de site publicado */
 .site-info {
   margin: 25px 0;
 }
@@ -1166,8 +970,233 @@
   border-radius: var(--border-radius-sm);
 }
 
-/* Ajustes adicionais para responsividade */
+/* Estilos para formulário */
+.section-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: var(--spacing-md);
+}
+
+.section-header h3 {
+  margin: 0;
+  font-family: var(--font-family-heading);
+  font-weight: 600;
+  color: var(--color-white);
+  flex-shrink: 0;
+}
+
+.section-line {
+  flex-grow: 1;
+  height: 1px;
+  background: linear-gradient(to right, rgba(255, 255, 255, 0.1), transparent);
+  margin-left: var(--spacing-sm);
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: var(--spacing-md);
+}
+
+.section-icon {
+  margin-right: 8px;
+  vertical-align: text-bottom;
+}
+
+/* Estilo para elementos de serviço */
+.service-header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  margin-bottom: var(--spacing-xs);
+}
+
+.service-number {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 25px;
+  height: 25px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--color-white);
+}
+
+/* Upload de arquivo customizado */
+.file-upload-field {
+  margin-bottom: var(--spacing-md);
+}
+
+.file-upload-container {
+  position: relative;
+  margin-bottom: var(--spacing-xs);
+}
+
+.file-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}
+
+.file-upload-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 1px dashed var(--color-border);
+  border-radius: var(--border-radius-sm);
+  color: var(--color-silver);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.file-upload-label:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+  color: var(--color-white);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.file-name-display {
+  margin-top: 10px;
+  padding: 8px 12px;
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: var(--border-radius-sm);
+  color: var(--color-silver);
+  font-size: 0.9rem;
+  border: 1px dashed var(--color-border);
+}
+
+.upload-feedback {
+  margin-top: var(--spacing-sm);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--border-radius-sm);
+  font-size: 0.9rem;
+  background-color: rgba(255, 255, 255, 0.05);
+  border-left: 3px solid var(--color-accent-blue);
+}
+
+/* Botões de navegação no formulário */
+.section-navigation {
+  display: flex;
+  justify-content: space-between;
+  margin-top: var(--spacing-lg);
+}
+
+.next-button, 
+.prev-button, 
+.complete-button {
+  display: inline-flex;
+  align-items: center;
+  padding: 10px 18px;
+  border: none;
+  border-radius: var(--border-radius-sm);
+  font-family: var(--font-family-main);
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.next-button {
+  background-color: rgba(255, 255, 255, 0.05);
+  color: var(--color-white);
+  margin-left: auto;
+}
+
+.next-button:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  transform: translateX(2px);
+}
+
+.prev-button {
+  background-color: transparent;
+  color: var(--color-silver);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.prev-button:hover {
+  background-color: rgba(255, 255, 255, 0.03);
+  color: var(--color-white);
+  transform: translateX(-2px);
+}
+
+.complete-button {
+  background-color: rgba(255, 255, 255, 0.08);
+  color: var(--color-white);
+  margin-left: auto;
+  position: relative;
+  overflow: hidden;
+}
+
+.complete-button::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: var(--diamond-reflection);
+  opacity: 0.5;
+  transition: 0.5s;
+}
+
+.complete-button:hover {
+  background-color: rgba(255, 255, 255, 0.12);
+  transform: translateY(-2px);
+}
+
+.complete-button:hover::after {
+  left: 100%;
+}
+
+.button-icon {
+  display: inline-block;
+  transition: transform var(--transition-fast);
+}
+
+.next-button:hover .button-icon {
+  transform: translateX(3px);
+}
+
+.prev-button:hover .button-icon {
+  transform: translateX(-3px);
+}
+
+/* Responsividade */
 @media (max-width: 768px) {
+  .plans-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .app-main {
+    width: 95%;
+    padding: var(--spacing-sm) 0 var(--spacing-lg);
+  }
+  
+  .action-buttons {
+    flex-direction: column;
+  }
+  
+  .plan-card-inner {
+    padding: var(--spacing-sm);
+  }
+  
+  .plan-price {
+    font-size: 1.3rem;
+  }
+  
+  .form-container {
+    padding: var(--spacing-md);
+  }
+  
   .modal-content {
     padding: var(--spacing-md);
   }
@@ -1193,14 +1222,23 @@
   }
 }
 
-/* Corrigir a sobreposição do modal no rodapé */
-.modal-overlay {
-  z-index: 2000;
-}
-
-.publish-modal {
-  z-index: 2001;
-  margin: 20px 0;
+@media (max-width: 480px) {
+  .app-title {
+    font-size: 1.8rem;
+  }
+  
+  .app-subtitle {
+    font-size: 1rem;
+  }
+  
+  .logo-text {
+    font-size: 1.6rem;
+  }
+  
+  .form-tabs {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
 }
 
 /* Garantir que os modais são rolados independentemente */

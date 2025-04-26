@@ -1,4 +1,4 @@
-// src/components/PublishSiteModal.js (refatorado)
+// src/components/PublishSiteModal.js
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useSiteContext } from '../context/SiteContext';
@@ -55,6 +55,30 @@ function PublishSiteModal({
       setShowTokenInput(true);
     }
   }, []);
+  
+  // Garantir que os elementos do modal sejam visíveis
+  useEffect(() => {
+    if (isOpen) {
+      // Pequeno timeout para garantir que o DOM foi atualizado
+      setTimeout(() => {
+        // Forçar visibilidade dos botões
+        const buttons = document.querySelectorAll('.modal-actions button, .primary-button, .secondary-button');
+        buttons.forEach(button => {
+          button.style.opacity = '1';
+          button.style.visibility = 'visible';
+          button.style.pointerEvents = 'auto';
+          button.style.cursor = 'pointer';
+        });
+        
+        // Garantir que os planos estejam clicáveis
+        const planCards = document.querySelectorAll('.plan-card');
+        planCards.forEach(card => {
+          card.style.cursor = 'pointer';
+          card.style.pointerEvents = 'auto';
+        });
+      }, 300);
+    }
+  }, [isOpen, publishStep]);
   
   // Handlers para os componentes
   const handlePlanChange = (planId) => {
@@ -265,15 +289,57 @@ function PublishSiteModal({
           
           {/* Passo 1: Seleção de plano */}
           {!showTokenInput && publishStep === 1 && (
-            <PlanSelection 
-              selectedPlan={selectedPlan}
-              onPlanChange={handlePlanChange}
-              customDomain={customDomain}
-              setCustomDomain={setCustomDomain}
-              testingMode={testingMode}
-              toggleTestingMode={toggleTestingMode}
-              errorMessage={paymentError}
-            />
+            <>
+              <PlanSelection 
+                selectedPlan={selectedPlan}
+                onPlanChange={handlePlanChange}
+                customDomain={customDomain}
+                setCustomDomain={setCustomDomain}
+                testingMode={testingMode}
+                toggleTestingMode={toggleTestingMode}
+                errorMessage={paymentError}
+              />
+              
+              {/* Botões explícitos no final do modal */}
+              <div 
+                className="modal-actions" 
+                style={{
+                  marginTop: '30px', 
+                  display: 'flex', 
+                  justifyContent: 'space-between',
+                  opacity: 1,
+                  visibility: 'visible'
+                }}
+              >
+                <button 
+                  className="secondary-button" 
+                  onClick={handleClose}
+                  disabled={isPublishing}
+                  style={{
+                    opacity: 1,
+                    visibility: 'visible',
+                    cursor: 'pointer',
+                    pointerEvents: 'auto'
+                  }}
+                >
+                  Cancelar
+                </button>
+                
+                <button 
+                  className="primary-button"
+                  onClick={handleContinueToPayment}
+                  disabled={isPublishing}
+                  style={{
+                    opacity: 1,
+                    visibility: 'visible',
+                    cursor: 'pointer',
+                    pointerEvents: 'auto'
+                  }}
+                >
+                  Continuar
+                </button>
+              </div>
+            </>
           )}
           
           {/* Passo 2: Pagamento */}

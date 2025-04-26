@@ -1,10 +1,89 @@
-// src/App.js (modificado)
-import React from 'react';
+// src/App.js
+import React, { useEffect } from 'react';
 import Form from './components/Form';
 import DownloadButton from './components/DownloadButton';
 import Logo from './components/Logo';
 import { SiteProvider, useSiteContext } from './context/SiteContext';
 import './styles/premium-theme.css';
+
+function createParticlesEffect() {
+  // Verificar se já existe um canvas de partículas
+  if (document.querySelector('.particles-canvas')) {
+    return;
+  }
+  
+  const canvas = document.createElement('canvas');
+  canvas.className = 'particles-canvas';
+  document.body.appendChild(canvas);
+  
+  const ctx = canvas.getContext('2d');
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  
+  const particles = [];
+  for (let i = 0; i < 50; i++) {
+    // Usando tons de branco/cinza em vez de cores
+    const opacity = Math.random() * 0.2 + 0.05; // Opacidade entre 0.05 e 0.25
+    particles.push({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      radius: Math.random() * 2 + 1,
+      color: `rgba(255, 255, 255, ${opacity})`, // Branco com opacidade variável
+      speedX: Math.random() * 1 - 0.5,
+      speedY: Math.random() * 1 - 0.5
+    });
+  }
+  
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    // Desenhar partículas
+    particles.forEach(p => {
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+      ctx.fillStyle = p.color;
+      ctx.fill();
+      
+      // Atualizar posição
+      p.x += p.speedX;
+      p.y += p.speedY;
+      
+      // Verificar bordas
+      if (p.x < 0 || p.x > canvas.width) p.speedX *= -1;
+      if (p.y < 0 || p.y > canvas.height) p.speedY *= -1;
+    });
+    
+    // Desenhar conexões
+    for (let i = 0; i < particles.length; i++) {
+      for (let j = i + 1; j < particles.length; j++) {
+        const dx = particles[i].x - particles[j].x;
+        const dy = particles[i].y - particles[j].y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        
+        if (distance < 150) {
+          // Conexões em branco com opacidade variando pela distância
+          const opacity = (1 - distance/150) * 0.2;
+          ctx.beginPath();
+          ctx.strokeStyle = `rgba(255, 255, 255, ${opacity})`;
+          ctx.lineWidth = 1;
+          ctx.moveTo(particles[i].x, particles[i].y);
+          ctx.lineTo(particles[j].x, particles[j].y);
+          ctx.stroke();
+        }
+      }
+    }
+    
+    requestAnimationFrame(draw);
+  }
+  
+  draw();
+  
+  // Ajustar no redimensionamento da janela
+  window.addEventListener('resize', () => {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  });
+}
 
 // Componente App principal que usa o contexto
 function AppContent() {
@@ -17,6 +96,28 @@ function AppContent() {
     generationError, 
     publishResult 
   } = state;
+
+  // Inicializar animações quando o componente montar
+  useEffect(() => {
+    // Inicializar o efeito de partículas
+    setTimeout(createParticlesEffect, 500);
+    
+    // Forçar visibilidade de elementos com fade-in
+    document.querySelectorAll('.fade-in').forEach(el => {
+      el.classList.add('visible');
+    });
+    
+    // Adicionar classe para indicar que a página está carregada
+    document.body.classList.add('app-loaded');
+    
+    return () => {
+      // Limpar quando o componente desmontar
+      const canvas = document.querySelector('.particles-canvas');
+      if (canvas) {
+        canvas.remove();
+      }
+    };
+  }, []);
 
   // Handlers simplificados que usam actions do contexto
   const handleInputChange = (e) => {

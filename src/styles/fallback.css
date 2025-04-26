@@ -162,3 +162,54 @@ body {
     padding: 40px;
     color: #F0F0F5;
   }
+
+  /* Adicionar ao arquivo src/styles/fallback.css */
+
+/* Garantir visibilidade do modal e seus botões */
+.publish-modal, 
+.modal-header, 
+.modal-content, 
+.modal-actions,
+.primary-button, 
+.secondary-button {
+  display: flex !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+.modal-actions {
+  justify-content: space-between !important;
+  margin-top: 30px !important;
+}
+
+.primary-button, 
+.secondary-button {
+  min-width: 120px !important;
+  padding: 14px 24px !important;
+  cursor: pointer !important;
+  pointer-events: auto !important;
+}
+
+/* Forçar visibilidade do fundo de partículas */
+.particles-canvas {
+  display: block !important;
+  opacity: 0.8 !important;
+}
+
+/* Garantir efeito de fundo com ou sem animação */
+body::after {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -3;
+  pointer-events: none;
+  background-image: 
+    radial-gradient(circle at 20% 20%, rgba(130, 78, 226, 0.1) 1px, transparent 1px),
+    radial-gradient(circle at 40% 60%, rgba(48, 201, 232, 0.1) 1px, transparent 1px),
+    radial-gradient(circle at 60% 30%, rgba(130, 78, 226, 0.1) 1px, transparent 1px),
+    radial-gradient(circle at 80% 70%, rgba(48, 201, 232, 0.1) 1px, transparent 1px);
+  background-size: 20% 20%;
+}
